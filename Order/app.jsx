@@ -159,7 +159,6 @@ function App() {
   if (done) {
     return (
       <>
-        <Topbar />
         <div className="main">
           <SuccessScreen form={form} onReset={reset} />
         </div>
