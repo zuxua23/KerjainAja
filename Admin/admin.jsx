@@ -10,7 +10,6 @@ const DEFAULT_PRICING = {
   op_filter: 10000, op_sum: 5000,
   op_exportPdf: 25000, op_exportExcel: 25000, op_print: 15000,
   dash_sum: 5000, dash_chart: 20000, dash_log: 15000,
-  svc_uml: 200000, svc_landing: 500000, svc_revision: 100000, svc_consult: 100000,
   techDev: 25000,
 };
 
@@ -38,7 +37,7 @@ const PRICING_GROUPS = [
   },
   {
     title: 'Dashboard Widget',
-    desc: 'Harga per widget dinamis di dashboard',
+    desc: 'Harga per widget di dashboard',
     keys: [
       ['dash_sum', 'Sum Widget', 'Statistik angka'],
       ['dash_chart', 'Chart Widget', 'Grafik (bar/line/pie/area)'],
@@ -56,21 +55,11 @@ const PRICING_GROUPS = [
     ],
   },
   {
-    title: 'Jasa One-Time',
-    desc: 'Harga flat per jenis jasa',
-    keys: [
-      ['svc_uml', 'Jasa UML & Database', 'Diagram UML, ERD, PDM'],
-      ['svc_landing', 'Jasa Landing Page', 'Web landing page profesional'],
-      ['svc_revision', 'Jasa Revisi', 'Perbaiki / improve app yang ada'],
-      ['svc_consult', 'Jasa Konsultasi', 'Konsultasi requirement'],
-    ],
-  },
-  {
     title: 'Lainnya',
     desc: 'Atribut & tech "Saran developer"',
     keys: [
       ['attr', 'Per Atribut', 'Harga per atribut/field'],
-      ['techDev', 'Saran Developer', 'Per kategori bahasa/FE/BE/DB'],
+      ['techDev', 'Saran Developer', 'Per kategori FE/BE/DB'],
     ],
   },
 ];
@@ -83,17 +72,94 @@ const DEFAULT_PAYMENT_METHODS = [
 ];
 
 const PM_LOGO_COLORS = {
-  bca:       '#0060AF',
-  blu:       '#5CB8E4',
-  mandiri:   '#003D79',
-  bri:       '#1566C0',
-  bni:       '#FF6600',
-  dana:      '#118EEA',
-  ovo:       '#4C3494',
-  gopay:     '#00AED6',
-  shopeepay: '#EE4D2D',
-  qris:      '#ED1C24',
+  bca: '#0060AF', blu: '#5CB8E4', mandiri: '#003D79', bri: '#1566C0', bni: '#FF6600',
+  dana: '#118EEA', ovo: '#4C3494', gopay: '#00AED6', shopeepay: '#EE4D2D', qris: '#ED1C24',
 };
+
+// ============================================
+// DEFAULT KONTEN CONFIG
+// ============================================
+const DEFAULT_UML_DIAGRAMS = [
+  { id: 'erd',      label: 'ERD (Entity Relationship Diagram)' },
+  { id: 'pdm',      label: 'PDM (Physical Data Model)'         },
+  { id: 'usecase',  label: 'Use Case Diagram'                  },
+  { id: 'activity', label: 'Activity Diagram'                  },
+  { id: 'sequence', label: 'Sequence Diagram'                  },
+  { id: 'class',    label: 'Class Diagram'                     },
+];
+
+const DEFAULT_TECH_OPTIONS = {
+  bahasa: [
+    { id: 'php',    label: 'PHP'                    },
+    { id: 'js',     label: 'JavaScript / TypeScript' },
+    { id: 'python', label: 'Python'                 },
+    { id: 'java',   label: 'Java'                   },
+    { id: 'dart',   label: 'Dart'                   },
+    { id: 'cs',     label: 'C#'                     },
+    { id: 'bahasa_dev', label: 'Saran developer', auto: true },
+  ],
+  fe: [
+    { id: 'react',       label: 'React'              },
+    { id: 'next',        label: 'Next.js'            },
+    { id: 'vue',         label: 'Vue / Nuxt'         },
+    { id: 'svelte',      label: 'Svelte'             },
+    { id: 'flutter',     label: 'Flutter (mobile)'   },
+    { id: 'html_native', label: 'HTML/CSS/JS Native' },
+    { id: 'blade',       label: 'Laravel Blade'      },
+    { id: 'fe_dev',      label: 'Saran developer', auto: true },
+  ],
+  be: [
+    { id: 'laravel',     label: 'Laravel'          },
+    { id: 'codeigniter', label: 'CodeIgniter'       },
+    { id: 'node',        label: 'Node.js + Express' },
+    { id: 'django',      label: 'Django'            },
+    { id: 'flask',       label: 'Flask'             },
+    { id: 'spring',      label: 'Spring Boot'       },
+    { id: 'dotnet',      label: '.NET'              },
+    { id: 'be_dev',      label: 'Saran developer', auto: true },
+  ],
+  db: [
+    { id: 'mysql',    label: 'MySQL'      },
+    { id: 'pg',       label: 'PostgreSQL' },
+    { id: 'sqlite',   label: 'SQLite'     },
+    { id: 'mongo',    label: 'MongoDB'    },
+    { id: 'firebase', label: 'Firebase'   },
+    { id: 'supabase', label: 'Supabase'   },
+    { id: 'db_dev',   label: 'Saran developer', auto: true },
+  ],
+};
+
+const DEFAULT_OPS_CRUD = [
+  { id: 'create', label: 'Create',         desc: 'Tambah data baru',          priceKey: 'op_create' },
+  { id: 'get',    label: 'Get / List',     desc: 'Lihat data (read)',          priceKey: 'op_get'    },
+  { id: 'update', label: 'Update',         desc: 'Edit data',                 priceKey: 'op_update' },
+  { id: 'delete', label: 'Delete',         desc: 'Hapus data',                priceKey: 'op_delete' },
+  { id: 'filter', label: 'Filter / Search',desc: 'Cari + filter terindeks',   priceKey: 'op_filter' },
+  { id: 'sum',    label: 'Get Sum',        desc: 'Hitung total / agregasi',   priceKey: 'op_sum'    },
+];
+
+const DEFAULT_OPS_LAPORAN = [
+  { id: 'get',         label: 'Get Data',        desc: 'Tampilkan laporan',      priceKey: 'op_get'         },
+  { id: 'filter',      label: 'Filter Periode',  desc: 'Filter rentang tanggal', priceKey: 'op_filter'      },
+  { id: 'sum',         label: 'Agregasi / Sum',  desc: 'Total, rata-rata, dll',  priceKey: 'op_sum'         },
+  { id: 'exportPdf',   label: 'Export PDF',      desc: 'Cetak ke PDF',           priceKey: 'op_exportPdf'   },
+  { id: 'exportExcel', label: 'Export Excel',    desc: 'Cetak ke .xlsx',         priceKey: 'op_exportExcel' },
+  { id: 'print',       label: 'Print Langsung',  desc: 'Print ke printer',       priceKey: 'op_print'       },
+];
+
+const DEFAULT_ATTR_TYPES = [
+  { id: 'text',     label: 'Text'         },
+  { id: 'longtext', label: 'Long Text'    },
+  { id: 'number',   label: 'Number'       },
+  { id: 'currency', label: 'Currency'     },
+  { id: 'date',     label: 'Date'         },
+  { id: 'datetime', label: 'Datetime'     },
+  { id: 'boolean',  label: 'Boolean'      },
+  { id: 'email',    label: 'Email'        },
+  { id: 'phone',    label: 'Phone'        },
+  { id: 'image',    label: 'Image / File' },
+  { id: 'relation', label: 'Relasi'       },
+];
 
 // ============================================
 // STORAGE HOOKS
@@ -139,14 +205,14 @@ function useOrders() {
   };
 
   const remove = (code) => {
-    if (!confirm(`Hapus order ${code}? Aksi ini gak bisa di-undo.`)) return;
+    if (!confirm(`Hapus order ${code}?`)) return;
     const next = orders.filter(o => o.code !== code);
     setOrders(next);
     localStorage.setItem('devorder_orders', JSON.stringify(next));
   };
 
   const clearAll = () => {
-    if (!confirm('Hapus SEMUA order? Aksi ini gak bisa di-undo.')) return;
+    if (!confirm('Hapus SEMUA order?')) return;
     setOrders([]);
     localStorage.removeItem('devorder_orders');
   };
@@ -162,24 +228,74 @@ function usePaymentMethods() {
     } catch { return DEFAULT_PAYMENT_METHODS; }
   });
 
-  const save = (next) => {
-    setMethods(next);
-    localStorage.setItem('devorder_payment_methods', JSON.stringify(next));
-  };
-
-  const add = (method) => save([...methods, method]);
+  const save = (next) => { setMethods(next); localStorage.setItem('devorder_payment_methods', JSON.stringify(next)); };
+  const add    = (m)  => save([...methods, m]);
   const update = (id, patch) => save(methods.map(m => m.id === id ? { ...m, ...patch } : m));
-  const remove = (id) => {
-    if (!confirm('Hapus metode pembayaran ini?')) return;
-    save(methods.filter(m => m.id !== id));
-  };
-  const reset = () => {
-    if (!confirm('Reset ke default?')) return;
-    save(DEFAULT_PAYMENT_METHODS);
-    localStorage.removeItem('devorder_payment_methods');
-  };
+  const remove = (id) => { if (!confirm('Hapus metode ini?')) return; save(methods.filter(m => m.id !== id)); };
+  const reset  = ()  => { if (!confirm('Reset ke default?')) return; save(DEFAULT_PAYMENT_METHODS); localStorage.removeItem('devorder_payment_methods'); };
 
   return { methods, add, update, remove, reset };
+}
+
+// -- Konten hooks --
+function useUmlDiagrams() {
+  const [items, setItems] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('devorder_uml_diagrams') || 'null') || DEFAULT_UML_DIAGRAMS; }
+    catch { return DEFAULT_UML_DIAGRAMS; }
+  });
+  const save  = (next) => { setItems(next); localStorage.setItem('devorder_uml_diagrams', JSON.stringify(next)); };
+  const add   = (item) => save([...items, item]);
+  const remove = (id) => save(items.filter(x => x.id !== id));
+  const reset  = ()    => { if (!confirm('Reset ke default?')) return; save(DEFAULT_UML_DIAGRAMS); localStorage.removeItem('devorder_uml_diagrams'); };
+  return { items, add, remove, reset };
+}
+
+function useTechOptions() {
+  const [opts, setOpts] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('devorder_tech_groups') || 'null') || DEFAULT_TECH_OPTIONS; }
+    catch { return DEFAULT_TECH_OPTIONS; }
+  });
+  const save     = (next) => { setOpts(next); localStorage.setItem('devorder_tech_groups', JSON.stringify(next)); };
+  const addItem  = (group, item) => save({ ...opts, [group]: [...(opts[group] || []), item] });
+  const removeItem = (group, id) => save({ ...opts, [group]: (opts[group] || []).filter(x => x.id !== id) });
+  const reset    = ()            => { if (!confirm('Reset ke default?')) return; save(DEFAULT_TECH_OPTIONS); localStorage.removeItem('devorder_tech_groups'); };
+  return { opts, addItem, removeItem, reset };
+}
+
+function useOpsCrud() {
+  const [ops, setOps] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('devorder_ops_crud') || 'null') || DEFAULT_OPS_CRUD; }
+    catch { return DEFAULT_OPS_CRUD; }
+  });
+  const save   = (next) => { setOps(next); localStorage.setItem('devorder_ops_crud', JSON.stringify(next)); };
+  const add    = (item) => save([...ops, item]);
+  const remove = (id)   => save(ops.filter(x => x.id !== id));
+  const reset  = ()     => { if (!confirm('Reset ke default?')) return; save(DEFAULT_OPS_CRUD); localStorage.removeItem('devorder_ops_crud'); };
+  return { ops, add, remove, reset };
+}
+
+function useOpsLaporan() {
+  const [ops, setOps] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('devorder_ops_laporan') || 'null') || DEFAULT_OPS_LAPORAN; }
+    catch { return DEFAULT_OPS_LAPORAN; }
+  });
+  const save   = (next) => { setOps(next); localStorage.setItem('devorder_ops_laporan', JSON.stringify(next)); };
+  const add    = (item) => save([...ops, item]);
+  const remove = (id)   => save(ops.filter(x => x.id !== id));
+  const reset  = ()     => { if (!confirm('Reset ke default?')) return; save(DEFAULT_OPS_LAPORAN); localStorage.removeItem('devorder_ops_laporan'); };
+  return { ops, add, remove, reset };
+}
+
+function useAttrTypes() {
+  const [types, setTypes] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('devorder_attr_types') || 'null') || DEFAULT_ATTR_TYPES; }
+    catch { return DEFAULT_ATTR_TYPES; }
+  });
+  const save   = (next) => { setTypes(next); localStorage.setItem('devorder_attr_types', JSON.stringify(next)); };
+  const add    = (item) => save([...types, item]);
+  const remove = (id)   => save(types.filter(x => x.id !== id));
+  const reset  = ()     => { if (!confirm('Reset ke default?')) return; save(DEFAULT_ATTR_TYPES); localStorage.removeItem('devorder_attr_types'); };
+  return { types, add, remove, reset };
 }
 
 // ============================================
@@ -195,38 +311,40 @@ function maybeSeedOrders() {
         status: 'pending', total: 1250000, dp: 312500,
         form: {
           name: 'Andi Pratama', wa: '81234567890', email: 'andi@email.com',
-          services: ['build'], counts: { master: 2, transaksi: 1, laporan: 0, dashboard: 1 },
+          services: ['build'],
+          counts: { master: 2, transaksi: 1, laporan: 0, dashboard: 1 },
           items: {
             master: [
-              { name: 'Produk', attrs: [{ name: 'nama', type: 'text' }, { name: 'harga', type: 'currency' }], ops: { create: true, get: true, update: true, delete: true }, notes: 'Perlu kategori produk' },
-              { name: 'User', attrs: [{ name: 'email', type: 'email' }], ops: { create: true, get: true, update: true } },
+              { name: 'Produk', attrs: [{ name: 'nama', type: 'text' }, { name: 'harga', type: 'currency' }], ops: { create: true, get: true, update: true, delete: true }, notes: '' },
+              { name: 'User',   attrs: [{ name: 'email', type: 'email' }], ops: { create: true, get: true, update: true }, notes: '' },
             ],
-            transaksi: [{ name: 'Penjualan', attrs: [{ name: 'tanggal', type: 'date' }, { name: 'total', type: 'currency' }], ops: { create: true, get: true, filter: true, sum: true } }],
-            dashboard: [{ name: 'Dashboard Owner', widgets: { sums: [{ name: 'Total Penjualan Hari Ini' }, { name: 'Stok Habis' }], charts: [{ name: 'Tren 7 Hari', type: 'line' }], logs: [{ name: 'Log Login User' }] } }],
+            transaksi: [{ name: 'Penjualan', attrs: [{ name: 'tanggal', type: 'date' }, { name: 'total', type: 'currency' }], ops: { create: true, get: true, filter: true, sum: true }, notes: '' }],
+            dashboard: [{ name: 'Dashboard Owner', widgets: { sums: [{ name: 'Total Penjualan Hari Ini' }], charts: [{ name: 'Tren 7 Hari', type: 'line' }], logs: [{ name: 'Log Login User' }] }, notes: '' }],
             laporan: [],
           },
-          tech: ['php', 'blade', 'laravel', 'mysql'], notes: 'Ada referensi dari kompetitor', deadline: '2026-06-01',
-          paymentMethod: 'bca', palette: 'corp',
+          buildProbis: 'Sistem kasir untuk toko retail kecil.',
+          tech: ['php', 'blade', 'laravel', 'mysql'],
+          notes: '', deadline: '2026-06-01', paymentMethod: 'bca', palette: 'corp',
         },
       },
       {
         code: 'DV-DEMO02', createdAt: new Date(Date.now() - 86400000).toISOString(),
-        status: 'paid', total: 700000, dp: 175000,
+        status: 'pending', total: 0, dp: 0,
         form: {
-          name: 'Bayu Saputra', wa: '8987654321', services: ['landing', 'uml-db'],
+          name: 'Bayu Saputra', wa: '8987654321', services: ['uml-db'],
+          extras: { 'uml-db': { diagrams: ['erd', 'pdm'], notes: 'Untuk keperluan skripsi sistem manajemen inventori.' } },
           counts: { master: 0, transaksi: 0, laporan: 0, dashboard: 0 }, items: { master: [], transaksi: [], laporan: [], dashboard: [] }, tech: [],
-          extras: { landing: { notes: 'Brand sneakers lokal, vibe streetwear' }, 'uml-db': { notes: 'Buat dokumentasi skripsi' } },
-          notes: '', deadline: '2026-05-30', paymentMethod: 'dana',
+          notes: '', deadline: '2026-05-30',
         },
       },
       {
         code: 'DV-DEMO03', createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-        status: 'in-progress', total: 100000, dp: 25000,
+        status: 'pending', total: 0, dp: 0,
         form: {
-          name: 'Citra Dewi', wa: '85678901234', services: ['consult'],
-          consult: { fields: '- login dgn google\n- manage product\n- laporan penjualan', pdm: true, usecase: true, activity: false, probis: 'Customer pesan via WA, admin input manual, kasir cetak struk.' },
-          counts: { master: 0, transaksi: 0, laporan: 0, dashboard: 0 }, items: { master: [], transaksi: [], laporan: [], dashboard: [] }, tech: [],
-          notes: '', deadline: '2026-05-25', paymentMethod: 'qris',
+          name: 'Citra Dewi', wa: '85678901234', services: ['landing'],
+          extras: { landing: { notes: 'Brand skincare lokal, vibe clean & modern.' } },
+          counts: { master: 0, transaksi: 0, laporan: 0, dashboard: 0 }, items: { master: [], transaksi: [], laporan: [], dashboard: [] },
+          tech: ['react'], notes: '', deadline: '2026-05-25',
         },
       },
     ];
@@ -238,19 +356,25 @@ function maybeSeedOrders() {
 // APP
 // ============================================
 const PAGES = [
-  { id: 'overview',  label: 'Overview',           icon: '◐' },
-  { id: 'orders',    label: 'Order Masuk',         icon: '◉' },
-  { id: 'pricing',   label: 'Harga & Operasi',     icon: '₹' },
-  { id: 'payments',  label: 'Metode Pembayaran',   icon: '💳' },
-  { id: 'settings',  label: 'Pengaturan',          icon: '⚙' },
+  { id: 'overview', label: 'Overview',         icon: '◐'  },
+  { id: 'orders',   label: 'Order Masuk',       icon: '◉'  },
+  { id: 'pricing',  label: 'Harga & Operasi',   icon: '₹'  },
+  { id: 'payments', label: 'Metode Pembayaran', icon: '💳' },
+  { id: 'konten',   label: 'Konten Jasa',       icon: '✦'  },
+  { id: 'settings', label: 'Pengaturan',        icon: '⚙'  },
 ];
 
 function AdminApp() {
-  const [page, setPage] = useState('overview');
+  const [page, setPage]               = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pricing, updatePricing, resetPricing] = usePricing();
-  const orderStore = useOrders();
+  const orderStore   = useOrders();
   const paymentStore = usePaymentMethods();
+  const umlStore     = useUmlDiagrams();
+  const techStore    = useTechOptions();
+  const opsCrudStore    = useOpsCrud();
+  const opsLaporanStore = useOpsLaporan();
+  const attrStore    = useAttrTypes();
   const [detailOrder, setDetailOrder] = useState(null);
 
   useEffect(() => { maybeSeedOrders(); orderStore.refresh(); }, []);
@@ -294,17 +418,25 @@ function AdminApp() {
           <button className="admin-menu-btn" onClick={() => setSidebarOpen(true)} aria-label="menu">☰</button>
           <div className="admin-topbar-title">{PAGES.find(p => p.id === page)?.label}</div>
           <div className="admin-topbar-meta">
-            <span className="admin-meta-dot" />
-            Synced
+            <span className="admin-meta-dot" />Synced
           </div>
         </div>
 
         <div className="admin-content">
-          {page === 'overview'  && <PageOverview orders={orderStore.orders} pricing={pricing} setPage={setPage} setDetailOrder={setDetailOrder} />}
-          {page === 'orders'    && <PageOrders store={orderStore} pricing={pricing} setDetailOrder={setDetailOrder} />}
-          {page === 'pricing'   && <PagePricing pricing={pricing} update={updatePricing} reset={resetPricing} />}
-          {page === 'payments'  && <PagePayments store={paymentStore} />}
-          {page === 'settings'  && <PageSettings />}
+          {page === 'overview' && <PageOverview orders={orderStore.orders} pricing={pricing} setPage={setPage} setDetailOrder={setDetailOrder} />}
+          {page === 'orders'   && <PageOrders store={orderStore} pricing={pricing} setDetailOrder={setDetailOrder} />}
+          {page === 'pricing'  && <PagePricing pricing={pricing} update={updatePricing} reset={resetPricing} />}
+          {page === 'payments' && <PagePayments store={paymentStore} />}
+          {page === 'konten'   && (
+            <PageKonten
+              umlStore={umlStore}
+              techStore={techStore}
+              opsCrudStore={opsCrudStore}
+              opsLaporanStore={opsLaporanStore}
+              attrStore={attrStore}
+            />
+          )}
+          {page === 'settings' && <PageSettings />}
         </div>
       </main>
 
@@ -324,10 +456,10 @@ function AdminApp() {
 // ============================================
 function PageOverview({ orders, pricing, setPage, setDetailOrder }) {
   const stats = useMemo(() => {
-    const totalRev = orders.reduce((s, o) => s + (o.total || 0), 0);
+    const totalRev    = orders.reduce((s, o) => s + (o.total || 0), 0);
     const pendingCount = orders.filter(o => o.status === 'pending').length;
-    const paidCount = orders.filter(o => o.status === 'paid' || o.status === 'in-progress' || o.status === 'done').length;
-    const last7Rev = orders.filter(o => Date.now() - new Date(o.createdAt).getTime() < 7 * 86400000).reduce((s, o) => s + (o.total || 0), 0);
+    const paidCount   = orders.filter(o => ['paid','in-progress','done'].includes(o.status)).length;
+    const last7Rev    = orders.filter(o => Date.now() - new Date(o.createdAt).getTime() < 7 * 86400000).reduce((s, o) => s + (o.total || 0), 0);
     return { totalRev, pendingCount, paidCount, last7Rev, total: orders.length };
   }, [orders]);
 
@@ -349,17 +481,17 @@ function PageOverview({ orders, pricing, setPage, setDetailOrder }) {
   return (
     <div>
       <div className="stat-grid">
-        <StatCard label="Total Order" val={stats.total} eyebrow="all-time" />
-        <StatCard label="Pending" val={stats.pendingCount} eyebrow="butuh konfirmasi" tone="warning" />
-        <StatCard label="Paid / In-progress" val={stats.paidCount} eyebrow="dalam pengerjaan" tone="accent" />
-        <StatCard label="Revenue 7 Hari" val={fmtRp(stats.last7Rev)} eyebrow={`Total all: ${fmtRp(stats.totalRev)}`} tone="primary" />
+        <StatCard label="Total Order"        val={stats.total}            eyebrow="all-time"            />
+        <StatCard label="Pending"            val={stats.pendingCount}     eyebrow="butuh konfirmasi"   tone="warning" />
+        <StatCard label="Paid / In-progress" val={stats.paidCount}        eyebrow="dalam pengerjaan"   tone="accent"  />
+        <StatCard label="Revenue 7 Hari"     val={fmtRp(stats.last7Rev)}  eyebrow={`Total all: ${fmtRp(stats.totalRev)}`} tone="primary" />
       </div>
 
       <div className="admin-card">
         <div className="admin-card-head">
           <div>
             <div className="admin-card-title">Revenue 7 Hari Terakhir</div>
-            <div className="admin-card-sub">Total order yang masuk per hari</div>
+            <div className="admin-card-sub">Total order build yang masuk per hari</div>
           </div>
         </div>
         <div className="bar-chart">
@@ -403,16 +535,16 @@ function StatCard({ label, val, eyebrow, tone }) {
 // ORDERS PAGE
 // ============================================
 const STATUS_OPTIONS = [
-  { id: 'pending',     label: 'Pending',      tone: 'warning'  },
-  { id: 'paid',        label: 'Paid',         tone: 'accent'   },
-  { id: 'in-progress', label: 'In Progress',  tone: 'primary'  },
-  { id: 'done',        label: 'Done',         tone: 'success'  },
-  { id: 'cancelled',   label: 'Cancelled',    tone: 'muted'    },
+  { id: 'pending',     label: 'Pending',     tone: 'warning' },
+  { id: 'paid',        label: 'Paid',        tone: 'accent'  },
+  { id: 'in-progress', label: 'In Progress', tone: 'primary' },
+  { id: 'done',        label: 'Done',        tone: 'success' },
+  { id: 'cancelled',   label: 'Cancelled',   tone: 'muted'   },
 ];
 
 function PageOrders({ store, pricing, setDetailOrder }) {
   const [filter, setFilter] = useState('all');
-  const [q, setQ] = useState('');
+  const [q, setQ]           = useState('');
 
   const filtered = useMemo(() => {
     return store.orders.filter(o => {
@@ -479,9 +611,9 @@ function OrderTable({ orders, onRowClick, onDelete, compact }) {
         </thead>
         <tbody>
           {orders.map(o => {
-            const status = STATUS_OPTIONS.find(s => s.id === o.status) || STATUS_OPTIONS[0];
+            const status   = STATUS_OPTIONS.find(s => s.id === o.status) || STATUS_OPTIONS[0];
             const services = (o.form?.services || []).map(sid => ({
-              build: 'Build', 'uml-db': 'UML+DB', landing: 'Landing', revision: 'Revisi', consult: 'Konsul'
+              build: 'Build', 'uml-db': 'UML+DB', landing: 'Landing', revision: 'Revisi',
             })[sid] || sid);
             return (
               <tr key={o.code} onClick={() => onRowClick(o)} className="order-row">
@@ -497,7 +629,7 @@ function OrderTable({ orders, onRowClick, onDelete, compact }) {
                     {services.map((s, i) => <span key={i} className="svc-chip">{s}</span>)}
                   </div>
                 </td>
-                <td className="num mono">{fmtRp(o.total || 0)}</td>
+                <td className="num mono">{o.total > 0 ? fmtRp(o.total) : <span style={{ color: 'var(--text-faint)' }}>Via chat</span>}</td>
                 <td><span className={'status-pill tone-' + status.tone}>{status.label}</span></td>
                 <td className="cell-muted mono">{new Date(o.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</td>
                 {onDelete && (
@@ -518,10 +650,15 @@ function OrderTable({ orders, onRowClick, onDelete, compact }) {
 // ORDER DETAIL MODAL
 // ============================================
 function OrderDetailModal({ order, onClose, onStatusChange }) {
-  const f = order.form || {};
+  const f        = order.form || {};
   const services = (f.services || []).map(sid => ({
-    build: 'Build dari 0', 'uml-db': 'UML & Database', landing: 'Landing Page', revision: 'Revisi', consult: 'Konsultasi'
+    build: 'Build dari 0', 'uml-db': 'UML & Database', landing: 'Landing Page', revision: 'Revisi/Bug Fix',
   })[sid] || sid);
+
+  const umlDiagramLabels = (() => {
+    const stored = JSON.parse(localStorage.getItem('devorder_uml_diagrams') || 'null') || DEFAULT_UML_DIAGRAMS;
+    return (f.extras?.['uml-db']?.diagrams || []).map(id => stored.find(d => d.id === id)?.label || id);
+  })();
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -552,10 +689,8 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
 
           <div className="modal-section">
             <div className="modal-section-title">Pelanggan</div>
-            <DetailRow label="Nama" val={f.name || '—'} />
-            <DetailRow label="WhatsApp" val={
-              <a href={`https://wa.me/62${f.wa}`} target="_blank" rel="noopener" className="link">+62{f.wa} →</a>
-            } />
+            <DetailRow label="Nama"         val={f.name || '—'} />
+            <DetailRow label="WhatsApp"     val={<a href={`https://wa.me/62${f.wa}`} target="_blank" rel="noopener" className="link">+62{f.wa} →</a>} />
             {f.email && <DetailRow label="Email" val={f.email} />}
             <DetailRow label="Tanggal Order" val={new Date(order.createdAt).toLocaleString('id-ID')} />
           </div>
@@ -565,10 +700,30 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
             <div className="svc-chips">
               {services.map((s, i) => <span key={i} className="svc-chip lg">{s}</span>)}
             </div>
-            {f.consult && (f.consult.fields || f.consult.probis) && (
+
+            {/* UML detail */}
+            {f.services?.includes('uml-db') && (
               <div className="modal-paragraph">
-                {f.consult.fields && <><strong>Kebutuhan:</strong><pre>{f.consult.fields}</pre></>}
-                {f.consult.probis && <><strong>Proses Bisnis:</strong><pre>{f.consult.probis}</pre></>}
+                {umlDiagramLabels.length > 0 && (
+                  <><strong>Diagram:</strong> {umlDiagramLabels.join(', ')}<br/></>
+                )}
+                {f.extras?.['uml-db']?.notes && (
+                  <><strong>Latar belakang:</strong><pre>{f.extras['uml-db'].notes}</pre></>
+                )}
+              </div>
+            )}
+
+            {/* Landing detail */}
+            {f.services?.includes('landing') && f.extras?.['landing']?.notes && (
+              <div className="modal-paragraph">
+                <strong>Catatan landing:</strong><pre>{f.extras['landing'].notes}</pre>
+              </div>
+            )}
+
+            {/* Revision detail */}
+            {f.services?.includes('revision') && f.extras?.['revision']?.notes && (
+              <div className="modal-paragraph">
+                <strong>Catatan revisi:</strong><pre>{f.extras['revision'].notes}</pre>
               </div>
             )}
           </div>
@@ -576,6 +731,11 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
           {(f.counts && Object.values(f.counts).some(v => v > 0)) && (
             <div className="modal-section">
               <div className="modal-section-title">Scope Build</div>
+              {f.buildProbis && (
+                <div className="modal-paragraph">
+                  <strong>Latar Belakang:</strong><pre>{f.buildProbis}</pre>
+                </div>
+              )}
               {['master', 'transaksi', 'laporan', 'dashboard'].map(k => {
                 const items = f.items?.[k] || [];
                 if (!items.length) return null;
@@ -604,22 +764,32 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
             </div>
           )}
 
+          {/* Tech untuk landing */}
+          {f.services?.includes('landing') && f.tech?.length > 0 && !f.services?.includes('build') && (
+            <div className="modal-section">
+              <div className="modal-section-title">Tech Stack</div>
+              <DetailRow label="Frontend" val={f.tech.join(', ')} />
+            </div>
+          )}
+
           <div className="modal-section">
             <div className="modal-section-title">Timeline & Catatan</div>
             <DetailRow label="Deadline" val={f.deadline ? new Date(f.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
             {f.notes && <div className="modal-paragraph"><pre>{f.notes}</pre></div>}
           </div>
 
-          <div className="modal-section modal-total">
-            <DetailRow label="DP (25%)" val={fmtRp(order.dp || 0)} />
-            <DetailRow label="Sisa (75%)" val={fmtRp((order.total || 0) - (order.dp || 0))} />
-            <DetailRow label="Metode" val={(f.paymentMethod || '—').toUpperCase()} />
-            <DetailRow label="TOTAL" val={fmtRp(order.total || 0)} big />
-          </div>
+          {order.total > 0 && (
+            <div className="modal-section modal-total">
+              <DetailRow label="DP (25%)"  val={fmtRp(order.dp || 0)} />
+              <DetailRow label="Sisa (75%)" val={fmtRp((order.total || 0) - (order.dp || 0))} />
+              <DetailRow label="Metode"    val={(f.paymentMethod || '—').toUpperCase()} />
+              <DetailRow label="TOTAL"     val={fmtRp(order.total || 0)} big />
+            </div>
+          )}
 
           <a
             className="modal-wa-cta"
-            href={`https://wa.me/62${f.wa}?text=${encodeURIComponent(`Halo ${f.name}, pesanan ${order.code} udah kami terima. `)}`}
+            href={`https://wa.me/62${f.wa}?text=${encodeURIComponent(`Halo ${f.name}, kita mau diskusiin lebih lanjut soal ${order.code}. `)}`}
             target="_blank" rel="noopener"
           >
             💬 Chat customer via WhatsApp →
@@ -674,7 +844,7 @@ function PagePricing({ pricing, update, reset }) {
 
 function PriceCell({ pkey, label, desc, val, onChange, defaultVal }) {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(String(val));
+  const [draft,   setDraft]   = useState(String(val));
 
   useEffect(() => { setDraft(String(val)); }, [val]);
 
@@ -705,13 +875,10 @@ function PriceCell({ pkey, label, desc, val, onChange, defaultVal }) {
           </div>
         ) : (
           <button className="price-display" onClick={() => setEditing(true)}>
-            {fmtRp(val)}
-            <span className="price-edit-hint">✎</span>
+            {fmtRp(val)}<span className="price-edit-hint">✎</span>
           </button>
         )}
-        {val !== defaultVal && (
-          <div className="price-default-hint">default: {fmtRp(defaultVal)}</div>
-        )}
+        {val !== defaultVal && <div className="price-default-hint">default: {fmtRp(defaultVal)}</div>}
       </div>
     </div>
   );
@@ -723,32 +890,24 @@ function PriceCell({ pkey, label, desc, val, onChange, defaultVal }) {
 const EMPTY_METHOD = { id: '', name: '', norek: '', atasNama: '', type: 'bank' };
 
 function PagePayments({ store }) {
-  const [editing, setEditing] = useState(null); // id or 'new'
-  const [form, setForm] = useState(EMPTY_METHOD);
+  const [editing, setEditing] = useState(null);
+  const [form,    setForm]    = useState(EMPTY_METHOD);
 
   const startEdit = (m) => { setEditing(m.id); setForm({ ...m }); };
-  const startNew = () => { setEditing('new'); setForm({ ...EMPTY_METHOD, id: 'pm_' + Date.now() }); };
-  const cancel = () => { setEditing(null); setForm(EMPTY_METHOD); };
+  const startNew  = ()  => { setEditing('new'); setForm({ ...EMPTY_METHOD, id: 'pm_' + Date.now() }); };
+  const cancel    = ()  => { setEditing(null); setForm(EMPTY_METHOD); };
 
   const save = () => {
     if (!form.name.trim() || !form.norek.trim()) return alert('Nama dan nomor rekening wajib diisi.');
-    if (editing === 'new') {
-      store.add({ ...form });
-    } else {
-      store.update(editing, { ...form });
-    }
+    editing === 'new' ? store.add({ ...form }) : store.update(editing, { ...form });
     cancel();
   };
-
-  const pmLogoColor = (id) => PM_LOGO_COLORS[id] || '#6B6B62';
 
   return (
     <div>
       <div className="admin-card admin-info-card">
         <div className="admin-info-icon">i</div>
-        <div style={{ flex: 1 }}>
-          Metode pembayaran yang ditampilkan ke customer saat checkout. Klik ✎ untuk edit.
-        </div>
+        <div style={{ flex: 1 }}>Metode pembayaran yang ditampilkan ke customer saat checkout (jasa Build).</div>
         <button className="admin-btn-ghost" onClick={store.reset}>↺ Reset default</button>
       </div>
 
@@ -786,11 +945,11 @@ function PagePayments({ store }) {
                 </div>
               ) : (
                 <div className="pm-item">
-                  <div className="pm-logo" style={{ background: pmLogoColor(m.id) }}>
+                  <div className="pm-logo" style={{ background: PM_LOGO_COLORS[m.id] || '#444' }}>
                     {m.name.substring(0, 4).toUpperCase()}
                   </div>
                   <div className="pm-body">
-                    <div className="pm-name">{m.name} <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 400, background: 'var(--bg-subtle)', borderRadius: 4, padding: '1px 6px' }}>{m.type}</span></div>
+                    <div className="pm-name">{m.name} <span style={{ fontSize: 11, color: 'var(--text-faint)', background: 'var(--bg-subtle)', borderRadius: 4, padding: '1px 6px' }}>{m.type}</span></div>
                     <div className="pm-detail">{m.norek} · a.n. {m.atasNama}</div>
                   </div>
                   <div className="pm-actions">
@@ -804,23 +963,8 @@ function PagePayments({ store }) {
         </div>
 
         {store.methods.length === 0 && (
-          <div className="pm-add-card" onClick={startNew}>
-            + Belum ada metode pembayaran. Klik untuk tambah.
-          </div>
+          <div className="pm-add-card" onClick={startNew}>+ Belum ada metode pembayaran. Klik untuk tambah.</div>
         )}
-      </div>
-
-      <div className="admin-card">
-        <div className="admin-card-head">
-          <div>
-            <div className="admin-card-title">Cara Kerja</div>
-          </div>
-        </div>
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div>📌 Data tersimpan di <code style={{ background: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>localStorage</code> browser ini.</div>
-          <div>📌 Customer melihat daftar ini saat memilih metode bayar di step pembayaran.</div>
-          <div>📌 Untuk sync ke Google Sheets / backend, update <code style={{ background: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>payment_methods</code> via <strong>saveConfig</strong> di Apps Script.</div>
-        </div>
       </div>
     </div>
   );
@@ -843,16 +987,335 @@ function PMForm({ form, setForm }) {
         </select>
       </div>
       <div className="pm-form-field">
-        <label className="pm-form-label">Nomor Rekening / Nomor HP *</label>
-        <input className="admin-input" style={{ width: '100%' }} value={form.norek} onChange={e => upd('norek', e.target.value)} placeholder="cth: 1234567890 atau 081234567890" />
+        <label className="pm-form-label">Nomor Rekening / HP *</label>
+        <input className="admin-input" style={{ width: '100%' }} value={form.norek} onChange={e => upd('norek', e.target.value)} placeholder="1234567890" />
       </div>
       <div className="pm-form-field">
         <label className="pm-form-label">Atas Nama</label>
-        <input className="admin-input" style={{ width: '100%' }} value={form.atasNama} onChange={e => upd('atasNama', e.target.value)} placeholder="Nama pemilik rekening" />
+        <input className="admin-input" style={{ width: '100%' }} value={form.atasNama} onChange={e => upd('atasNama', e.target.value)} />
       </div>
       <div className="pm-form-field pm-form-span">
-        <label className="pm-form-label">ID (untuk internal, huruf kecil tanpa spasi)</label>
-        <input className="admin-input" style={{ width: '100%' }} value={form.id} onChange={e => upd('id', e.target.value.toLowerCase().replace(/\s/g, '_'))} placeholder="cth: bca, dana, shopeepay" />
+        <label className="pm-form-label">ID (huruf kecil tanpa spasi)</label>
+        <input className="admin-input" style={{ width: '100%' }} value={form.id} onChange={e => upd('id', e.target.value.toLowerCase().replace(/\s/g, '_'))} placeholder="cth: bca, dana" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// KONTEN JASA PAGE
+// ============================================
+function PageKonten({ umlStore, techStore, opsCrudStore, opsLaporanStore, attrStore }) {
+  const [tab, setTab] = useState('uml');
+
+  const tabs = [
+    { id: 'uml',      label: '◫ Diagram UML'    },
+    { id: 'tech',     label: '⊞ Tech Stack'      },
+    { id: 'ops',      label: '⚙ Operasi Build'   },
+    { id: 'attrtype', label: '≡ Tipe Atribut'    },
+  ];
+
+  return (
+    <div>
+      <div className="admin-card admin-info-card">
+        <div className="admin-info-icon">i</div>
+        <div style={{ flex: 1 }}>
+          Kelola konten yang ditampilkan di form customer. Reload halaman form agar perubahan langsung terlihat.
+        </div>
+      </div>
+
+      <div className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', overflowX: 'auto' }}>
+          {tabs.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              style={{
+                padding: '12px 18px', fontSize: 13, fontWeight: tab === t.id ? 700 : 500,
+                background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+                color: tab === t.id ? 'var(--primary)' : 'var(--text-muted)',
+                borderBottom: tab === t.id ? '2px solid var(--primary)' : '2px solid transparent',
+                marginBottom: -1,
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ padding: 20 }}>
+          {tab === 'uml'      && <TabUmlDiagrams store={umlStore} />}
+          {tab === 'tech'     && <TabTechStack store={techStore} />}
+          {tab === 'ops'      && <TabOpsConfig opsCrudStore={opsCrudStore} opsLaporanStore={opsLaporanStore} />}
+          {tab === 'attrtype' && <TabAttrTypes store={attrStore} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// -- Tab: Diagram UML --
+function TabUmlDiagrams({ store }) {
+  const [label, setLabel] = useState('');
+
+  const addNew = () => {
+    const v = label.trim();
+    if (!v) return;
+    const id = v.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    store.add({ id: id + '_' + Date.now(), label: v });
+    setLabel('');
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Daftar Diagram UML</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Customer wajib pilih minimal 1 dari daftar ini</div>
+        </div>
+        <button className="admin-btn-ghost" onClick={store.reset}>↺ Reset</button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        {store.items.map(d => (
+          <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--bg-subtle)', borderRadius: 8 }}>
+            <span style={{ flex: 1, fontSize: 14 }}>◻ {d.label}</span>
+            <button className="admin-btn-danger-sm" onClick={() => store.remove(d.id)}>× Hapus</button>
+          </div>
+        ))}
+        {store.items.length === 0 && <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Belum ada diagram.</div>}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="admin-input"
+          style={{ flex: 1 }}
+          placeholder="Nama diagram baru, cth: BPMN Diagram"
+          value={label}
+          onChange={e => setLabel(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') addNew(); }}
+        />
+        <button className="admin-btn-primary" onClick={addNew} disabled={!label.trim()}>+ Tambah</button>
+      </div>
+    </div>
+  );
+}
+
+// -- Tab: Tech Stack --
+function TabTechStack({ store }) {
+  const GROUPS = [
+    { key: 'bahasa', label: 'Bahasa Pemrograman' },
+    { key: 'fe',     label: 'Frontend'           },
+    { key: 'be',     label: 'Backend'            },
+    { key: 'db',     label: 'Database'           },
+  ];
+  const [activeGroup, setActiveGroup] = useState('bahasa');
+  const [newLabel, setNewLabel]       = useState('');
+
+  const currentItems = store.opts[activeGroup] || [];
+
+  const addNew = () => {
+    const v = newLabel.trim();
+    if (!v) return;
+    const id = activeGroup + '_' + v.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now();
+    store.addItem(activeGroup, { id, label: v });
+    setNewLabel('');
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Tech Stack Options</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Kelola pilihan tech di tiap kategori</div>
+        </div>
+        <button className="admin-btn-ghost" onClick={store.reset}>↺ Reset semua</button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        {GROUPS.map(g => (
+          <button
+            key={g.key}
+            onClick={() => setActiveGroup(g.key)}
+            style={{
+              padding: '6px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer', border: '1.5px solid',
+              borderColor: activeGroup === g.key ? 'var(--primary)' : 'var(--border)',
+              background: activeGroup === g.key ? 'var(--primary-soft, #ede9ff)' : 'transparent',
+              color: activeGroup === g.key ? 'var(--primary)' : 'var(--text-muted)',
+              fontWeight: activeGroup === g.key ? 700 : 400,
+            }}
+          >
+            {g.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        {currentItems.map(item => (
+          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--bg-subtle)', borderRadius: 8 }}>
+            <span style={{ flex: 1, fontSize: 14 }}>
+              {item.auto && <span style={{ color: 'var(--primary)', marginRight: 4 }}>✦</span>}
+              {item.label}
+              {item.auto && <span style={{ fontSize: 11, color: 'var(--text-faint)', marginLeft: 6 }}>(saran developer)</span>}
+            </span>
+            {!item.auto && (
+              <button className="admin-btn-danger-sm" onClick={() => store.removeItem(activeGroup, item.id)}>× Hapus</button>
+            )}
+          </div>
+        ))}
+        {currentItems.length === 0 && <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Belum ada opsi.</div>}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="admin-input"
+          style={{ flex: 1 }}
+          placeholder={`Tambah opsi ${GROUPS.find(g => g.key === activeGroup)?.label}, cth: Remix`}
+          value={newLabel}
+          onChange={e => setNewLabel(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') addNew(); }}
+        />
+        <button className="admin-btn-primary" onClick={addNew} disabled={!newLabel.trim()}>+ Tambah</button>
+      </div>
+    </div>
+  );
+}
+
+// -- Tab: Operasi Build --
+function TabOpsConfig({ opsCrudStore, opsLaporanStore }) {
+  const [activeTab, setActiveTab] = useState('crud');
+  const [label, setLabel]         = useState('');
+  const [desc,  setDesc]          = useState('');
+  const [priceKey, setPriceKey]   = useState('op_get');
+
+  const store = activeTab === 'crud' ? opsCrudStore : opsLaporanStore;
+
+  const PRICE_KEY_OPTIONS = [
+    'op_create','op_get','op_update','op_delete','op_filter','op_sum',
+    'op_exportPdf','op_exportExcel','op_print',
+  ];
+
+  const addNew = () => {
+    const v = label.trim();
+    if (!v) return;
+    const id = v.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+    store.add({ id, label: v, desc: desc.trim() || v, priceKey });
+    setLabel(''); setDesc('');
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Operasi Build</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Kelola operasi yang tersedia di scope master/transaksi/laporan</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        {[{ id: 'crud', label: 'CRUD (Master / Transaksi)' }, { id: 'laporan', label: 'Laporan' }].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            style={{
+              padding: '6px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer', border: '1.5px solid',
+              borderColor: activeTab === t.id ? 'var(--primary)' : 'var(--border)',
+              background: activeTab === t.id ? 'var(--primary-soft, #ede9ff)' : 'transparent',
+              color: activeTab === t.id ? 'var(--primary)' : 'var(--text-muted)',
+              fontWeight: activeTab === t.id ? 700 : 400,
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        {store.ops.map(op => (
+          <div key={op.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--bg-subtle)', borderRadius: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{op.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{op.desc} · {op.priceKey}</div>
+            </div>
+            <button className="admin-btn-danger-sm" onClick={() => store.remove(op.id)}>× Hapus</button>
+          </div>
+        ))}
+        {store.ops.length === 0 && <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Belum ada operasi.</div>}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>Tambah Operasi Baru</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input
+            className="admin-input"
+            style={{ flex: 2, minWidth: 140 }}
+            placeholder="Nama operasi, cth: Approve"
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+          />
+          <input
+            className="admin-input"
+            style={{ flex: 2, minWidth: 140 }}
+            placeholder="Deskripsi singkat"
+            value={desc}
+            onChange={e => setDesc(e.target.value)}
+          />
+          <select className="admin-input" style={{ flex: 1, minWidth: 120 }} value={priceKey} onChange={e => setPriceKey(e.target.value)}>
+            {PRICE_KEY_OPTIONS.map(k => <option key={k} value={k}>{k}</option>)}
+          </select>
+          <button className="admin-btn-primary" onClick={addNew} disabled={!label.trim()}>+ Tambah</button>
+        </div>
+        <div className="admin-btn-ghost" style={{ width: 'fit-content', cursor: 'pointer' }} onClick={store.reset}>↺ Reset ke default</div>
+      </div>
+    </div>
+  );
+}
+
+// -- Tab: Tipe Atribut --
+function TabAttrTypes({ store }) {
+  const [label, setLabel] = useState('');
+
+  const addNew = () => {
+    const v = label.trim();
+    if (!v) return;
+    const id = v.toLowerCase().replace(/[^a-z0-9]/g, '') + '_' + Date.now();
+    store.add({ id, label: v });
+    setLabel('');
+  };
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Tipe Data Atribut</div>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Tipe data yang tersedia saat customer input atribut</div>
+        </div>
+        <button className="admin-btn-ghost" onClick={store.reset}>↺ Reset</button>
+      </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+        {store.types.map(t => (
+          <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', background: 'var(--bg-subtle)', borderRadius: 20, fontSize: 13 }}>
+            <span>{t.label}</span>
+            <button
+              onClick={() => store.remove(t.id)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', fontSize: 14, lineHeight: 1, padding: 0 }}
+            >×</button>
+          </div>
+        ))}
+        {store.types.length === 0 && <div style={{ color: 'var(--text-faint)', fontSize: 13 }}>Belum ada tipe.</div>}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          className="admin-input"
+          style={{ flex: 1 }}
+          placeholder="Nama tipe baru, cth: JSON"
+          value={label}
+          onChange={e => setLabel(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') addNew(); }}
+        />
+        <button className="admin-btn-primary" onClick={addNew} disabled={!label.trim()}>+ Tambah</button>
       </div>
     </div>
   );
@@ -862,7 +1325,7 @@ function PMForm({ form, setForm }) {
 // SETTINGS
 // ============================================
 function PageSettings() {
-  const [wa, setWa] = useState(() => localStorage.getItem('devorder_admin_wa') || '6281234567890');
+  const [wa,     setWa]     = useState(() => localStorage.getItem('devorder_admin_wa')     || '6281234567890');
   const [studio, setStudio] = useState(() => localStorage.getItem('devorder_studio_name') || 'DevOrder Studio');
 
   const save = () => {
@@ -888,7 +1351,7 @@ function PageSettings() {
           <div>
             <label className="settings-label">WhatsApp Admin (untuk konfirmasi customer)</label>
             <input className="admin-input" style={{ width: '100%' }} value={wa} onChange={e => setWa(e.target.value.replace(/\D/g, ''))} placeholder="6281234567890" />
-            <div className="settings-hint">Format: 62xxxx (tanpa +/spasi). Muncul di success screen customer.</div>
+            <div className="settings-hint">Format: 62xxxx (tanpa +/spasi). Muncul di halaman WA redirect dan success screen.</div>
           </div>
         </div>
         <button className="admin-btn-primary" onClick={save} style={{ marginTop: 16 }}>Simpan</button>
@@ -904,14 +1367,19 @@ function PageSettings() {
         <div className="settings-grid">
           <button className="admin-btn-ghost" style={{ width: 'fit-content' }} onClick={() => {
             const data = {
-              orders: JSON.parse(localStorage.getItem('devorder_orders') || '[]'),
-              pricing: JSON.parse(localStorage.getItem('devorder_pricing') || '{}'),
+              orders:         JSON.parse(localStorage.getItem('devorder_orders')          || '[]'),
+              pricing:        JSON.parse(localStorage.getItem('devorder_pricing')         || '{}'),
               paymentMethods: JSON.parse(localStorage.getItem('devorder_payment_methods') || 'null'),
+              umlDiagrams:    JSON.parse(localStorage.getItem('devorder_uml_diagrams')    || 'null'),
+              techGroups:     JSON.parse(localStorage.getItem('devorder_tech_groups')     || 'null'),
+              opsCrud:        JSON.parse(localStorage.getItem('devorder_ops_crud')        || 'null'),
+              opsLaporan:     JSON.parse(localStorage.getItem('devorder_ops_laporan')     || 'null'),
+              attrTypes:      JSON.parse(localStorage.getItem('devorder_attr_types')      || 'null'),
               settings: { wa, studio },
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
             a.href = url; a.download = `devorder-backup-${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
