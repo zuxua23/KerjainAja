@@ -170,7 +170,6 @@ function App() {
 
   return (
     <div className="app">
-      <Topbar />
       <Stepper steps={STEPS} step={step} />
 
       <div className="main">
@@ -222,22 +221,6 @@ function App() {
       )}
 
       <TweaksUI t={t} setTweak={setTweak} />
-    </div>
-  );
-}
-
-function Topbar() {
-  return (
-    <div className="topbar">
-      <div className="logo">
-        <div className="logo-mark">{'</>'}</div>
-        DevOrder
-      </div>
-      <div className="topbar-meta">
-        <a href="admin.html" className="admin-link" title="Admin Dashboard">⚙</a>
-        <span className="topbar-secure-text">Aman & terenkripsi</span>
-        <span className="dot-secure" />
-      </div>
     </div>
   );
 }
