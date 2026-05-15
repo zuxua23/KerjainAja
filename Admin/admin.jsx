@@ -1,7 +1,6 @@
 /* global React, ReactDOM */
 const { useState, useEffect, useMemo } = React;
 
-// Mirror constants from main app (in case admin loaded standalone)
 const fmtRp = (n) => 'Rp ' + Math.round(n).toLocaleString('id-ID');
 
 const DEFAULT_PRICING = {
@@ -76,6 +75,26 @@ const PRICING_GROUPS = [
   },
 ];
 
+const DEFAULT_PAYMENT_METHODS = [
+  { id: 'bca',       name: 'BCA',               norek: '1234567890',   atasNama: 'Muhammad Nur Fauzan', type: 'bank'    },
+  { id: 'blu',       name: 'Blu by BCA Digital', norek: '08xxxxxxxxxx', atasNama: 'Muhammad Nur Fauzan', type: 'bank'    },
+  { id: 'dana',      name: 'Dana',               norek: '08xxxxxxxxxx', atasNama: 'Muhammad Nur Fauzan', type: 'ewallet' },
+  { id: 'shopeepay', name: 'ShopeePay',          norek: '08xxxxxxxxxx', atasNama: 'Muhammad Nur Fauzan', type: 'ewallet' },
+];
+
+const PM_LOGO_COLORS = {
+  bca:       '#0060AF',
+  blu:       '#5CB8E4',
+  mandiri:   '#003D79',
+  bri:       '#1566C0',
+  bni:       '#FF6600',
+  dana:      '#118EEA',
+  ovo:       '#4C3494',
+  gopay:     '#00AED6',
+  shopeepay: '#EE4D2D',
+  qris:      '#ED1C24',
+};
+
 // ============================================
 // STORAGE HOOKS
 // ============================================
@@ -135,8 +154,36 @@ function useOrders() {
   return { orders, refresh, updateStatus, remove, clearAll };
 }
 
+function usePaymentMethods() {
+  const [methods, setMethods] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('devorder_payment_methods') || 'null');
+      return stored || DEFAULT_PAYMENT_METHODS;
+    } catch { return DEFAULT_PAYMENT_METHODS; }
+  });
+
+  const save = (next) => {
+    setMethods(next);
+    localStorage.setItem('devorder_payment_methods', JSON.stringify(next));
+  };
+
+  const add = (method) => save([...methods, method]);
+  const update = (id, patch) => save(methods.map(m => m.id === id ? { ...m, ...patch } : m));
+  const remove = (id) => {
+    if (!confirm('Hapus metode pembayaran ini?')) return;
+    save(methods.filter(m => m.id !== id));
+  };
+  const reset = () => {
+    if (!confirm('Reset ke default?')) return;
+    save(DEFAULT_PAYMENT_METHODS);
+    localStorage.removeItem('devorder_payment_methods');
+  };
+
+  return { methods, add, update, remove, reset };
+}
+
 // ============================================
-// SEED DEMO ORDERS (if empty)
+// SEED DEMO ORDERS
 // ============================================
 function maybeSeedOrders() {
   try {
@@ -191,10 +238,11 @@ function maybeSeedOrders() {
 // APP
 // ============================================
 const PAGES = [
-  { id: 'overview', label: 'Overview', icon: '◐' },
-  { id: 'orders', label: 'Order Masuk', icon: '◉' },
-  { id: 'pricing', label: 'Harga & Operasi', icon: '₹' },
-  { id: 'settings', label: 'Pengaturan', icon: '⚙' },
+  { id: 'overview',  label: 'Overview',           icon: '◐' },
+  { id: 'orders',    label: 'Order Masuk',         icon: '◉' },
+  { id: 'pricing',   label: 'Harga & Operasi',     icon: '₹' },
+  { id: 'payments',  label: 'Metode Pembayaran',   icon: '💳' },
+  { id: 'settings',  label: 'Pengaturan',          icon: '⚙' },
 ];
 
 function AdminApp() {
@@ -202,11 +250,11 @@ function AdminApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pricing, updatePricing, resetPricing] = usePricing();
   const orderStore = useOrders();
+  const paymentStore = usePaymentMethods();
   const [detailOrder, setDetailOrder] = useState(null);
 
   useEffect(() => { maybeSeedOrders(); orderStore.refresh(); }, []);
 
-  // Lock body scroll when sidebar open on mobile
   useEffect(() => {
     document.body.style.overflow = sidebarOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -252,14 +300,21 @@ function AdminApp() {
         </div>
 
         <div className="admin-content">
-          {page === 'overview' && <PageOverview orders={orderStore.orders} pricing={pricing} setPage={setPage} setDetailOrder={setDetailOrder} />}
-          {page === 'orders' && <PageOrders store={orderStore} pricing={pricing} setDetailOrder={setDetailOrder} />}
-          {page === 'pricing' && <PagePricing pricing={pricing} update={updatePricing} reset={resetPricing} />}
-          {page === 'settings' && <PageSettings />}
+          {page === 'overview'  && <PageOverview orders={orderStore.orders} pricing={pricing} setPage={setPage} setDetailOrder={setDetailOrder} />}
+          {page === 'orders'    && <PageOrders store={orderStore} pricing={pricing} setDetailOrder={setDetailOrder} />}
+          {page === 'pricing'   && <PagePricing pricing={pricing} update={updatePricing} reset={resetPricing} />}
+          {page === 'payments'  && <PagePayments store={paymentStore} />}
+          {page === 'settings'  && <PageSettings />}
         </div>
       </main>
 
-      {detailOrder && <OrderDetailModal order={detailOrder} onClose={() => setDetailOrder(null)} onStatusChange={(s) => { orderStore.updateStatus(detailOrder.code, s); setDetailOrder({ ...detailOrder, status: s }); }} />}
+      {detailOrder && (
+        <OrderDetailModal
+          order={detailOrder}
+          onClose={() => setDetailOrder(null)}
+          onStatusChange={(s) => { orderStore.updateStatus(detailOrder.code, s); setDetailOrder({ ...detailOrder, status: s }); }}
+        />
+      )}
     </div>
   );
 }
@@ -276,13 +331,10 @@ function PageOverview({ orders, pricing, setPage, setDetailOrder }) {
     return { totalRev, pendingCount, paidCount, last7Rev, total: orders.length };
   }, [orders]);
 
-  // Bar chart data: last 7 days revenue
   const chartData = useMemo(() => {
     const days = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setHours(0,0,0,0);
-      d.setDate(d.getDate() - i);
+      const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - i);
       const next = new Date(d); next.setDate(next.getDate() + 1);
       const rev = orders
         .filter(o => { const t = new Date(o.createdAt).getTime(); return t >= d.getTime() && t < next.getTime(); })
@@ -351,11 +403,11 @@ function StatCard({ label, val, eyebrow, tone }) {
 // ORDERS PAGE
 // ============================================
 const STATUS_OPTIONS = [
-  { id: 'pending', label: 'Pending', tone: 'warning' },
-  { id: 'paid', label: 'Paid', tone: 'accent' },
-  { id: 'in-progress', label: 'In Progress', tone: 'primary' },
-  { id: 'done', label: 'Done', tone: 'success' },
-  { id: 'cancelled', label: 'Cancelled', tone: 'muted' },
+  { id: 'pending',     label: 'Pending',      tone: 'warning'  },
+  { id: 'paid',        label: 'Paid',         tone: 'accent'   },
+  { id: 'in-progress', label: 'In Progress',  tone: 'primary'  },
+  { id: 'done',        label: 'Done',         tone: 'success'  },
+  { id: 'cancelled',   label: 'Cancelled',    tone: 'muted'    },
 ];
 
 function PageOrders({ store, pricing, setDetailOrder }) {
@@ -534,19 +586,13 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
                       <div key={i} className="scope-item">
                         <strong>{it.name || `(belum diisi #${i + 1})`}</strong>
                         {it.attrs && it.attrs.length > 0 && (
-                          <div className="scope-meta">
-                            atribut: {it.attrs.map(a => `${a.name}:${a.type}`).join(', ')}
-                          </div>
+                          <div className="scope-meta">atribut: {it.attrs.map(a => `${a.name}:${a.type}`).join(', ')}</div>
                         )}
                         {it.ops && (
-                          <div className="scope-meta">
-                            operasi: {Object.keys(it.ops).filter(o => it.ops[o]).join(', ') || '—'}
-                          </div>
+                          <div className="scope-meta">operasi: {Object.keys(it.ops).filter(o => it.ops[o]).join(', ') || '—'}</div>
                         )}
                         {it.widgets && (
-                          <div className="scope-meta">
-                            widget: {it.widgets.sums.length} sum, {it.widgets.charts.length} chart, {it.widgets.logs.length} log
-                          </div>
+                          <div className="scope-meta">widget: {it.widgets.sums.length} sum, {it.widgets.charts.length} chart, {it.widgets.logs.length} log</div>
                         )}
                         {it.notes && <div className="scope-meta italic">"{it.notes}"</div>}
                       </div>
@@ -571,7 +617,11 @@ function OrderDetailModal({ order, onClose, onStatusChange }) {
             <DetailRow label="TOTAL" val={fmtRp(order.total || 0)} big />
           </div>
 
-          <a className="modal-wa-cta" href={`https://wa.me/62${f.wa}?text=${encodeURIComponent(`Halo ${f.name}, pesanan ${order.code} udah kami terima.`)}`} target="_blank" rel="noopener">
+          <a
+            className="modal-wa-cta"
+            href={`https://wa.me/62${f.wa}?text=${encodeURIComponent(`Halo ${f.name}, pesanan ${order.code} udah kami terima. `)}`}
+            target="_blank" rel="noopener"
+          >
             💬 Chat customer via WhatsApp →
           </a>
         </div>
@@ -597,8 +647,8 @@ function PagePricing({ pricing, update, reset }) {
     <div>
       <div className="admin-card admin-info-card">
         <div className="admin-info-icon">i</div>
-        <div>
-          <strong>Harga di-manage dari sini.</strong> Perubahan langsung kepake di form customer (load via localStorage). Klik nominal buat edit.
+        <div style={{ flex: 1 }}>
+          <strong>Harga di-manage dari sini.</strong> Perubahan langsung kepake di form customer. Klik nominal buat edit.
         </div>
         <button className="admin-btn-ghost" onClick={reset}>↺ Reset semua</button>
       </div>
@@ -668,6 +718,147 @@ function PriceCell({ pkey, label, desc, val, onChange, defaultVal }) {
 }
 
 // ============================================
+// PAYMENT METHODS PAGE
+// ============================================
+const EMPTY_METHOD = { id: '', name: '', norek: '', atasNama: '', type: 'bank' };
+
+function PagePayments({ store }) {
+  const [editing, setEditing] = useState(null); // id or 'new'
+  const [form, setForm] = useState(EMPTY_METHOD);
+
+  const startEdit = (m) => { setEditing(m.id); setForm({ ...m }); };
+  const startNew = () => { setEditing('new'); setForm({ ...EMPTY_METHOD, id: 'pm_' + Date.now() }); };
+  const cancel = () => { setEditing(null); setForm(EMPTY_METHOD); };
+
+  const save = () => {
+    if (!form.name.trim() || !form.norek.trim()) return alert('Nama dan nomor rekening wajib diisi.');
+    if (editing === 'new') {
+      store.add({ ...form });
+    } else {
+      store.update(editing, { ...form });
+    }
+    cancel();
+  };
+
+  const pmLogoColor = (id) => PM_LOGO_COLORS[id] || '#6B6B62';
+
+  return (
+    <div>
+      <div className="admin-card admin-info-card">
+        <div className="admin-info-icon">i</div>
+        <div style={{ flex: 1 }}>
+          Metode pembayaran yang ditampilkan ke customer saat checkout. Klik ✎ untuk edit.
+        </div>
+        <button className="admin-btn-ghost" onClick={store.reset}>↺ Reset default</button>
+      </div>
+
+      <div className="admin-card">
+        <div className="admin-card-head">
+          <div>
+            <div className="admin-card-title">Daftar Metode Pembayaran</div>
+            <div className="admin-card-sub">{store.methods.length} metode aktif</div>
+          </div>
+          <button className="admin-btn-primary" onClick={startNew}>+ Tambah</button>
+        </div>
+
+        {editing === 'new' && (
+          <div className="pm-edit-form">
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, color: 'var(--primary)' }}>➕ Metode Baru</div>
+            <PMForm form={form} setForm={setForm} />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button className="admin-btn-primary admin-btn-sm" onClick={save}>Simpan</button>
+              <button className="admin-btn-ghost admin-btn-sm" onClick={cancel}>Batal</button>
+            </div>
+          </div>
+        )}
+
+        <div className="pm-list">
+          {store.methods.map(m => (
+            <div key={m.id}>
+              {editing === m.id ? (
+                <div className="pm-edit-form">
+                  <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 12, color: 'var(--primary)' }}>✎ Edit: {m.name}</div>
+                  <PMForm form={form} setForm={setForm} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <button className="admin-btn-primary admin-btn-sm" onClick={save}>Simpan</button>
+                    <button className="admin-btn-ghost admin-btn-sm" onClick={cancel}>Batal</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="pm-item">
+                  <div className="pm-logo" style={{ background: pmLogoColor(m.id) }}>
+                    {m.name.substring(0, 4).toUpperCase()}
+                  </div>
+                  <div className="pm-body">
+                    <div className="pm-name">{m.name} <span style={{ fontSize: 11, color: 'var(--text-faint)', fontWeight: 400, background: 'var(--bg-subtle)', borderRadius: 4, padding: '1px 6px' }}>{m.type}</span></div>
+                    <div className="pm-detail">{m.norek} · a.n. {m.atasNama}</div>
+                  </div>
+                  <div className="pm-actions">
+                    <button className="admin-btn-ghost admin-btn-sm" onClick={() => startEdit(m)}>✎ Edit</button>
+                    <button className="admin-btn-danger-sm" onClick={() => store.remove(m.id)}>× Hapus</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {store.methods.length === 0 && (
+          <div className="pm-add-card" onClick={startNew}>
+            + Belum ada metode pembayaran. Klik untuk tambah.
+          </div>
+        )}
+      </div>
+
+      <div className="admin-card">
+        <div className="admin-card-head">
+          <div>
+            <div className="admin-card-title">Cara Kerja</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div>📌 Data tersimpan di <code style={{ background: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>localStorage</code> browser ini.</div>
+          <div>📌 Customer melihat daftar ini saat memilih metode bayar di step pembayaran.</div>
+          <div>📌 Untuk sync ke Google Sheets / backend, update <code style={{ background: 'var(--bg-subtle)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', fontSize: 12 }}>payment_methods</code> via <strong>saveConfig</strong> di Apps Script.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PMForm({ form, setForm }) {
+  const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  return (
+    <div className="pm-form-grid">
+      <div className="pm-form-field">
+        <label className="pm-form-label">Nama Metode *</label>
+        <input className="admin-input" style={{ width: '100%' }} value={form.name} onChange={e => upd('name', e.target.value)} placeholder="cth: BCA, Dana, ShopeePay" />
+      </div>
+      <div className="pm-form-field">
+        <label className="pm-form-label">Tipe</label>
+        <select className="admin-input" style={{ width: '100%' }} value={form.type} onChange={e => upd('type', e.target.value)}>
+          <option value="bank">Bank Transfer</option>
+          <option value="ewallet">E-Wallet</option>
+          <option value="qris">QRIS</option>
+        </select>
+      </div>
+      <div className="pm-form-field">
+        <label className="pm-form-label">Nomor Rekening / Nomor HP *</label>
+        <input className="admin-input" style={{ width: '100%' }} value={form.norek} onChange={e => upd('norek', e.target.value)} placeholder="cth: 1234567890 atau 081234567890" />
+      </div>
+      <div className="pm-form-field">
+        <label className="pm-form-label">Atas Nama</label>
+        <input className="admin-input" style={{ width: '100%' }} value={form.atasNama} onChange={e => upd('atasNama', e.target.value)} placeholder="Nama pemilik rekening" />
+      </div>
+      <div className="pm-form-field pm-form-span">
+        <label className="pm-form-label">ID (untuk internal, huruf kecil tanpa spasi)</label>
+        <input className="admin-input" style={{ width: '100%' }} value={form.id} onChange={e => upd('id', e.target.value.toLowerCase().replace(/\s/g, '_'))} placeholder="cth: bca, dana, shopeepay" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // SETTINGS
 // ============================================
 function PageSettings() {
@@ -677,7 +868,7 @@ function PageSettings() {
   const save = () => {
     localStorage.setItem('devorder_admin_wa', wa);
     localStorage.setItem('devorder_studio_name', studio);
-    alert('Pengaturan tersimpan');
+    alert('Pengaturan tersimpan!');
   };
 
   return (
@@ -692,11 +883,11 @@ function PageSettings() {
         <div className="settings-grid">
           <div>
             <label className="settings-label">Nama Studio</label>
-            <input className="admin-input" value={studio} onChange={e => setStudio(e.target.value)} />
+            <input className="admin-input" style={{ width: '100%' }} value={studio} onChange={e => setStudio(e.target.value)} />
           </div>
           <div>
             <label className="settings-label">WhatsApp Admin (untuk konfirmasi customer)</label>
-            <input className="admin-input" value={wa} onChange={e => setWa(e.target.value.replace(/\D/g, ''))} placeholder="6281234567890" />
+            <input className="admin-input" style={{ width: '100%' }} value={wa} onChange={e => setWa(e.target.value.replace(/\D/g, ''))} placeholder="6281234567890" />
             <div className="settings-hint">Format: 62xxxx (tanpa +/spasi). Muncul di success screen customer.</div>
           </div>
         </div>
@@ -711,10 +902,11 @@ function PageSettings() {
           </div>
         </div>
         <div className="settings-grid">
-          <button className="admin-btn-ghost" onClick={() => {
+          <button className="admin-btn-ghost" style={{ width: 'fit-content' }} onClick={() => {
             const data = {
               orders: JSON.parse(localStorage.getItem('devorder_orders') || '[]'),
               pricing: JSON.parse(localStorage.getItem('devorder_pricing') || '{}'),
+              paymentMethods: JSON.parse(localStorage.getItem('devorder_payment_methods') || 'null'),
               settings: { wa, studio },
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
