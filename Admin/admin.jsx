@@ -351,7 +351,7 @@ function maybeSeedOrders() {
     localStorage.setItem('devorder_orders', JSON.stringify(demo));
   } catch (e) { /* ignore */ }
 }
-
+ 
 // ============================================
 // APP
 // ============================================
