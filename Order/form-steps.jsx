@@ -30,11 +30,6 @@ const DEFAULT_PRICING = {
   dash_sum: 5000,
   dash_chart: 20000,
   dash_log: 15000,
-  // Services (one-time)
-  svc_uml: 200000,
-  svc_landing: 500000,
-  svc_revision: 100000,
-  svc_consult: 100000,
   // Tech "Saran developer" (per kategori bahasa/fe/be/db)
   techDev: 25000,
 };
@@ -50,28 +45,28 @@ function loadPricing() {
 const PRICING = loadPricing();
 
 // ============================================
-// SERVICES
+// SERVICES (konsultasi dihapus)
 // ============================================
 const SERVICES = [
   {
     id: 'uml-db',
     label: 'Diagram UML & Desain Database',
     desc: 'UML, ERD, PDM, lengkap dengan dokumentasinya',
-    priceKey: 'svc_uml',
+    priceKey: null,   // harga ditentukan via chat
     icon: '◫',
   },
   {
     id: 'landing',
     label: 'Landing Page',
     desc: 'Website landing page profesional, responsive',
-    priceKey: 'svc_landing',
+    priceKey: null,   // harga ditentukan via chat
     icon: '◧',
   },
   {
     id: 'revision',
     label: 'Revisi / Bug Fix',
     desc: 'Perbaiki / improve aplikasi yang udah ada',
-    priceKey: 'svc_revision',
+    priceKey: null,   // harga ditentukan via chat
     icon: '↻',
   },
   {
@@ -82,123 +77,175 @@ const SERVICES = [
     icon: '⊞',
     highlight: true,
   },
-  {
-    id: 'consult',
-    label: 'Konsultasi Requirement',
-    desc: 'Rumusin kebutuhan, diagram, proses bisnis',
-    priceKey: 'svc_consult',
-    icon: '◉',
-  },
 ];
+
+// ============================================
+// UML DIAGRAMS (admin-managed)
+// ============================================
+const DEFAULT_UML_DIAGRAMS = [
+  { id: 'erd',      label: 'ERD (Entity Relationship Diagram)' },
+  { id: 'pdm',      label: 'PDM (Physical Data Model)' },
+  { id: 'usecase',  label: 'Use Case Diagram' },
+  { id: 'activity', label: 'Activity Diagram' },
+  { id: 'sequence', label: 'Sequence Diagram' },
+  { id: 'class',    label: 'Class Diagram' },
+];
+
+function loadUmlDiagrams() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('devorder_uml_diagrams') || 'null');
+    return stored || DEFAULT_UML_DIAGRAMS;
+  } catch {
+    return DEFAULT_UML_DIAGRAMS;
+  }
+}
+const UML_DIAGRAMS = loadUmlDiagrams();
 
 // ============================================
 // CATEGORIES (Scope)
 // ============================================
-const OPS_CRUD = [
-  { id: 'create', label: 'Create', desc: 'Tambah data baru', priceKey: 'op_create' },
-  { id: 'get', label: 'Get / List', desc: 'Lihat data (read)', priceKey: 'op_get' },
-  { id: 'update', label: 'Update', desc: 'Edit data', priceKey: 'op_update' },
-  { id: 'delete', label: 'Delete', desc: 'Hapus data', priceKey: 'op_delete' },
+const DEFAULT_OPS_CRUD = [
+  { id: 'create', label: 'Create',        desc: 'Tambah data baru',          priceKey: 'op_create' },
+  { id: 'get',    label: 'Get / List',    desc: 'Lihat data (read)',          priceKey: 'op_get'    },
+  { id: 'update', label: 'Update',        desc: 'Edit data',                 priceKey: 'op_update' },
+  { id: 'delete', label: 'Delete',        desc: 'Hapus data',                priceKey: 'op_delete' },
   { id: 'filter', label: 'Filter / Search', desc: 'Cari + filter terindeks', priceKey: 'op_filter' },
-  { id: 'sum', label: 'Get Sum', desc: 'Hitung total / agregasi', priceKey: 'op_sum' },
+  { id: 'sum',    label: 'Get Sum',       desc: 'Hitung total / agregasi',   priceKey: 'op_sum'    },
 ];
 
-const OPS_LAPORAN = [
-  { id: 'get', label: 'Get Data', desc: 'Tampilkan laporan', priceKey: 'op_get' },
-  { id: 'filter', label: 'Filter Periode', desc: 'Filter rentang tanggal', priceKey: 'op_filter' },
-  { id: 'sum', label: 'Agregasi / Sum', desc: 'Total, rata-rata, dll', priceKey: 'op_sum' },
-  { id: 'exportPdf', label: 'Export PDF', desc: 'Cetak ke PDF', priceKey: 'op_exportPdf' },
-  { id: 'exportExcel', label: 'Export Excel', desc: 'Cetak ke .xlsx', priceKey: 'op_exportExcel' },
-  { id: 'print', label: 'Print Langsung', desc: 'Print ke printer', priceKey: 'op_print' },
+const DEFAULT_OPS_LAPORAN = [
+  { id: 'get',         label: 'Get Data',       desc: 'Tampilkan laporan',      priceKey: 'op_get'       },
+  { id: 'filter',      label: 'Filter Periode', desc: 'Filter rentang tanggal', priceKey: 'op_filter'    },
+  { id: 'sum',         label: 'Agregasi / Sum', desc: 'Total, rata-rata, dll',  priceKey: 'op_sum'       },
+  { id: 'exportPdf',   label: 'Export PDF',     desc: 'Cetak ke PDF',           priceKey: 'op_exportPdf' },
+  { id: 'exportExcel', label: 'Export Excel',   desc: 'Cetak ke .xlsx',         priceKey: 'op_exportExcel' },
+  { id: 'print',       label: 'Print Langsung', desc: 'Print ke printer',       priceKey: 'op_print'     },
 ];
+
+function loadOpsCrud() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('devorder_ops_crud') || 'null');
+    return stored || DEFAULT_OPS_CRUD;
+  } catch { return DEFAULT_OPS_CRUD; }
+}
+
+function loadOpsLaporan() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('devorder_ops_laporan') || 'null');
+    return stored || DEFAULT_OPS_LAPORAN;
+  } catch { return DEFAULT_OPS_LAPORAN; }
+}
+
+const OPS_CRUD    = loadOpsCrud();
+const OPS_LAPORAN = loadOpsLaporan();
 
 const CATEGORIES = [
-  { key: 'master', label: 'Master Data', desc: 'Tabel data utama (user, produk, kategori)', priceKey: 'master', namePh: 'cth: Produk', ops: OPS_CRUD },
-  { key: 'transaksi', label: 'Transaksi', desc: 'Modul pencatatan transaksi & alurnya', priceKey: 'transaksi', namePh: 'cth: Penjualan', ops: OPS_CRUD },
-  { key: 'laporan', label: 'Laporan', desc: 'Output laporan (PDF, Excel, cetak)', priceKey: 'laporan', namePh: 'cth: Laporan harian', ops: OPS_LAPORAN },
-  { key: 'dashboard', label: 'Dashboard', desc: 'Widget statis: sum, chart, log activity', priceKey: 'dashboard', namePh: 'cth: Dashboard Admin', ops: null /* uses widgets */ },
+  { key: 'master',    label: 'Master Data', desc: 'Tabel data utama (user, produk, kategori)', priceKey: 'master',    namePh: 'cth: Produk',          ops: OPS_CRUD    },
+  { key: 'transaksi', label: 'Transaksi',   desc: 'Modul pencatatan transaksi & alurnya',      priceKey: 'transaksi', namePh: 'cth: Penjualan',        ops: OPS_CRUD    },
+  { key: 'laporan',   label: 'Laporan',     desc: 'Output laporan (PDF, Excel, cetak)',        priceKey: 'laporan',   namePh: 'cth: Laporan harian',   ops: OPS_LAPORAN },
+  { key: 'dashboard', label: 'Dashboard',   desc: 'Widget statis: sum, chart, log activity',  priceKey: 'dashboard', namePh: 'cth: Dashboard Admin',  ops: null        },
 ];
 
 // ============================================
-// ATTRIBUTE DATA TYPES
+// ATTRIBUTE DATA TYPES (admin-managed)
 // ============================================
-const ATTR_TYPES = [
-  { id: 'text', label: 'Text' },
-  { id: 'longtext', label: 'Long Text' },
-  { id: 'number', label: 'Number' },
-  { id: 'currency', label: 'Currency' },
-  { id: 'date', label: 'Date' },
-  { id: 'datetime', label: 'Datetime' },
-  { id: 'boolean', label: 'Boolean' },
-  { id: 'email', label: 'Email' },
-  { id: 'phone', label: 'Phone' },
-  { id: 'image', label: 'Image / File' },
-  { id: 'relation', label: 'Relasi' },
+const DEFAULT_ATTR_TYPES = [
+  { id: 'text',     label: 'Text'        },
+  { id: 'longtext', label: 'Long Text'   },
+  { id: 'number',   label: 'Number'      },
+  { id: 'currency', label: 'Currency'    },
+  { id: 'date',     label: 'Date'        },
+  { id: 'datetime', label: 'Datetime'    },
+  { id: 'boolean',  label: 'Boolean'     },
+  { id: 'email',    label: 'Email'       },
+  { id: 'phone',    label: 'Phone'       },
+  { id: 'image',    label: 'Image / File'},
+  { id: 'relation', label: 'Relasi'      },
 ];
 
+function loadAttrTypes() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('devorder_attr_types') || 'null');
+    return stored || DEFAULT_ATTR_TYPES;
+  } catch { return DEFAULT_ATTR_TYPES; }
+}
+const ATTR_TYPES = loadAttrTypes();
+
 // ============================================
-// TECH GROUPS
+// TECH GROUPS (admin-managed)
 // ============================================
-const TECH_GROUPS = [
+const DEFAULT_TECH_GROUPS = [
   {
     key: 'bahasa', label: 'Bahasa Pemrograman', hint: 'Pilih satu atau lebih',
     options: [
-      { id: 'php', label: 'PHP' },
-      { id: 'js', label: 'JavaScript / TypeScript' },
-      { id: 'python', label: 'Python' },
-      { id: 'java', label: 'Java' },
-      { id: 'dart', label: 'Dart' },
-      { id: 'cs', label: 'C#' },
+      { id: 'php',    label: 'PHP'                   },
+      { id: 'js',     label: 'JavaScript / TypeScript'},
+      { id: 'python', label: 'Python'                },
+      { id: 'java',   label: 'Java'                  },
+      { id: 'dart',   label: 'Dart'                  },
+      { id: 'cs',     label: 'C#'                    },
       { id: 'bahasa_dev', label: 'Saran developer', auto: true },
     ],
   },
   {
-    key: 'fe', label: 'Frontend', hint: 'Framework / library untuk tampilan',
+    key: 'fe', label: 'Frontend', hint: 'Framework / library untuk tampilan (wajib)',
     options: [
-      { id: 'react', label: 'React' },
-      { id: 'next', label: 'Next.js' },
-      { id: 'vue', label: 'Vue / Nuxt' },
-      { id: 'svelte', label: 'Svelte' },
-      { id: 'flutter', label: 'Flutter (mobile)' },
-      { id: 'html_native', label: 'HTML/CSS/JS Native' },
-      { id: 'blade', label: 'Laravel Blade' },
-      { id: 'fe_dev', label: 'Saran developer', auto: true },
+      { id: 'react',       label: 'React'           },
+      { id: 'next',        label: 'Next.js'         },
+      { id: 'vue',         label: 'Vue / Nuxt'      },
+      { id: 'svelte',      label: 'Svelte'          },
+      { id: 'flutter',     label: 'Flutter (mobile)'},
+      { id: 'html_native', label: 'HTML/CSS/JS Native'},
+      { id: 'blade',       label: 'Laravel Blade'   },
+      { id: 'fe_dev',      label: 'Saran developer', auto: true },
     ],
   },
   {
     key: 'be', label: 'Backend', hint: 'Framework server-side',
     options: [
-      { id: 'laravel', label: 'Laravel' },
-      { id: 'codeigniter', label: 'CodeIgniter' },
-      { id: 'node', label: 'Node.js + Express' },
-      { id: 'django', label: 'Django' },
-      { id: 'flask', label: 'Flask' },
-      { id: 'spring', label: 'Spring Boot' },
-      { id: 'dotnet', label: '.NET' },
-      { id: 'be_dev', label: 'Saran developer', auto: true },
+      { id: 'laravel',     label: 'Laravel'         },
+      { id: 'codeigniter', label: 'CodeIgniter'      },
+      { id: 'node',        label: 'Node.js + Express'},
+      { id: 'django',      label: 'Django'           },
+      { id: 'flask',       label: 'Flask'            },
+      { id: 'spring',      label: 'Spring Boot'      },
+      { id: 'dotnet',      label: '.NET'             },
+      { id: 'be_dev',      label: 'Saran developer', auto: true },
     ],
   },
   {
     key: 'db', label: 'Database', hint: 'Tempat data disimpan',
     options: [
-      { id: 'mysql', label: 'MySQL' },
-      { id: 'pg', label: 'PostgreSQL' },
-      { id: 'sqlite', label: 'SQLite' },
-      { id: 'mongo', label: 'MongoDB' },
-      { id: 'firebase', label: 'Firebase' },
-      { id: 'supabase', label: 'Supabase' },
-      { id: 'db_dev', label: 'Saran developer', auto: true },
+      { id: 'mysql',    label: 'MySQL'      },
+      { id: 'pg',       label: 'PostgreSQL' },
+      { id: 'sqlite',   label: 'SQLite'     },
+      { id: 'mongo',    label: 'MongoDB'    },
+      { id: 'firebase', label: 'Firebase'   },
+      { id: 'supabase', label: 'Supabase'   },
+      { id: 'db_dev',   label: 'Saran developer', auto: true },
     ],
   },
 ];
 
-const TECH_FLAT = TECH_GROUPS.flatMap(g => g.options.map(o => ({ ...o, group: g.key, groupLabel: g.label })));
+function loadTechGroups() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('devorder_tech_groups') || 'null');
+    if (!stored) return DEFAULT_TECH_GROUPS;
+    // Merge stored options into default structure
+    return DEFAULT_TECH_GROUPS.map(g => ({
+      ...g,
+      options: stored[g.key] || g.options,
+    }));
+  } catch { return DEFAULT_TECH_GROUPS; }
+}
+const TECH_GROUPS = loadTechGroups();
+const TECH_FLAT   = TECH_GROUPS.flatMap(g => g.options.map(o => ({ ...o, group: g.key, groupLabel: g.label })));
 
-// Reduced color palette options (only 3 + custom note fallback)
+// Reduced color palette options
 const COLOR_PALETTES = [
-  { id: 'corp', label: 'Corporate', colors: ['#1E3A8A', '#3B82F6', '#DBEAFE'] },
-  { id: 'mono', label: 'Mono Pro', colors: ['#0A0A0A', '#525252', '#E5E5E5'] },
-  { id: 'fresh', label: 'Fresh', colors: ['#15803D', '#22C55E', '#DCFCE7'] },
+  { id: 'corp',  label: 'Corporate', colors: ['#1E3A8A', '#3B82F6', '#DBEAFE'] },
+  { id: 'mono',  label: 'Mono Pro',  colors: ['#0A0A0A', '#525252', '#E5E5E5'] },
+  { id: 'fresh', label: 'Fresh',     colors: ['#15803D', '#22C55E', '#DCFCE7'] },
 ];
 
 // ============================================
@@ -266,7 +313,6 @@ function StepService({ form, setForm, errors }) {
     }));
   };
 
-  const updConsult = (patch) => setForm(f => ({ ...f, consult: { ...f.consult, ...patch } }));
   const updExtra = (svcId, patch) => setForm(f => ({
     ...f, extras: { ...f.extras, [svcId]: { ...(f.extras?.[svcId] || {}), ...patch } }
   }));
@@ -276,14 +322,13 @@ function StepService({ form, setForm, errors }) {
       <div className="step-header">
         <div className="step-eyebrow">Step 02 / Jenis Jasa</div>
         <h1 className="step-title">Mau jasa apa, {form.name?.split(' ')[0] || 'kak'}?</h1>
-        <p className="step-subtitle">Bisa pilih lebih dari satu. Kalau pilih "Build dari 0" nanti ada step buat ngisi scope-nya.</p>
+        <p className="step-subtitle">Bisa pilih lebih dari satu.</p>
       </div>
 
       <div className="card">
         <div className="service-grid">
           {SERVICES.map(s => {
             const checked = form.services.includes(s.id);
-            const price = s.priceKey ? PRICING[s.priceKey] : null;
             return (
               <div
                 key={s.id}
@@ -299,7 +344,9 @@ function StepService({ form, setForm, errors }) {
                   <div className="service-desc">{s.desc}</div>
                 </div>
                 <div className="service-price">
-                  {s.id === 'build' ? <span className="svc-dynamic">Sesuai scope</span> : <span>+{fmtRp(price)}</span>}
+                  {s.id === 'build'
+                    ? <span className="svc-dynamic">Sesuai scope</span>
+                    : <span className="svc-via-chat">Harga via chat</span>}
                 </div>
               </div>
             );
@@ -311,66 +358,8 @@ function StepService({ form, setForm, errors }) {
         )}
       </div>
 
-      {/* Konsultasi — detail input */}
-      {form.services.includes('consult') && (
-        <div className="card service-detail-card">
-          <div className="detail-header">
-            <div className="detail-icon">◉</div>
-            <div>
-              <div className="detail-title">Konsultasi Requirement</div>
-              <div className="detail-sub">Semua field di bawah opsional — isi yang relevan aja</div>
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">Kebutuhan (field-field yang kepikiran)</label>
-            <textarea
-              className="textarea"
-              placeholder="Sebutin field/fitur yang udah kebayang, satu baris satu item. Cth:&#10;- login user&#10;- manage produk (nama, harga, stok)&#10;- laporan penjualan harian"
-              value={form.consult?.fields || ''}
-              onChange={e => updConsult({ fields: e.target.value })}
-              rows={5}
-            />
-          </div>
-
-          <div className="field">
-            <label className="label">Diagram yang dibutuhkan <span className="label-hint">— opsional</span></label>
-            <div className="checkbox-grid">
-              {[
-                { id: 'pdm', label: 'PDM (Physical Data Model)' },
-                { id: 'activity', label: 'Activity Diagram' },
-                { id: 'usecase', label: 'Use Case Diagram' },
-              ].map(d => {
-                const ck = form.consult?.[d.id];
-                return (
-                  <div
-                    key={d.id}
-                    className={'checkbox-row' + (ck ? ' checked' : '')}
-                    onClick={() => updConsult({ [d.id]: !ck })}
-                  >
-                    <div className="checkbox-box">{ck && '✓'}</div>
-                    <span>{d.label}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">Proses Bisnis (probis) <span className="label-hint">— opsional, paragraf</span></label>
-            <textarea
-              className="textarea"
-              placeholder="Jelasin alur bisnis kamu kalau ada. Cth: customer pesan → kasir input → bayar → otomatis kurangi stok → kasir cetak struk."
-              value={form.consult?.probis || ''}
-              onChange={e => updConsult({ probis: e.target.value })}
-              rows={4}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Generic catatan for other services */}
-      {['uml-db', 'landing', 'revision'].map(svcId => {
+      {/* Catatan tambahan untuk landing & revision */}
+      {['landing', 'revision'].map(svcId => {
         if (!form.services.includes(svcId)) return null;
         const svc = SERVICES.find(s => s.id === svcId);
         return (
@@ -385,9 +374,9 @@ function StepService({ form, setForm, errors }) {
             <textarea
               className="textarea"
               placeholder={
-                svcId === 'uml-db' ? 'Aplikasi apa? Mau diagram apa aja? Ada referensi?' :
-                svcId === 'landing' ? 'Produk/jasa apa yang dijual? Warna brand? Ada referensi landing page yang disuka?' :
-                'Aplikasi mana yang mau direvisi? Bug-nya apa? Fitur baru yang mau ditambahin?'
+                svcId === 'landing'
+                  ? 'Produk/jasa apa yang dijual? Warna brand? Ada referensi landing page yang disuka?'
+                  : 'Aplikasi mana yang mau direvisi? Bug-nya apa? Fitur baru yang mau ditambahin?'
               }
               value={form.extras?.[svcId]?.notes || ''}
               onChange={e => updExtra(svcId, { notes: e.target.value })}
@@ -401,16 +390,15 @@ function StepService({ form, setForm, errors }) {
 }
 
 // ============================================
-// STEP 5 — CATATAN AKHIR (gabungan timeline + catatan)
+// STEP — TIMELINE & CATATAN
 // ============================================
 function StepTimeline({ form, setForm, errors }) {
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const today = new Date();
+  const today         = new Date();
   const suggestedDate = new Date(today.getTime() + 14 * 86400000).toISOString().split('T')[0];
-  const minDate = new Date(today.getTime() + 86400000).toISOString().split('T')[0];
-  const daysUntil = form.deadline ? Math.max(0, Math.ceil((new Date(form.deadline) - today) / 86400000)) : 0;
+  const minDate       = new Date(today.getTime() + 86400000).toISOString().split('T')[0];
+  const daysUntil     = form.deadline ? Math.max(0, Math.ceil((new Date(form.deadline) - today) / 86400000)) : 0;
 
   return (
     <div className="step-content" data-screen-label="05 Timeline & Catatan">
@@ -438,40 +426,45 @@ function StepTimeline({ form, setForm, errors }) {
             </div>
           )}
           {!form.deadline && (
-            <div className="helper">Saran: {new Date(suggestedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (~2 minggu)</div>
+            <div className="helper">
+              Saran: {new Date(suggestedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })} (~2 minggu)
+            </div>
           )}
         </div>
 
-        <div className="field">
-          <label className="label">Warna / Mood Desain <span className="label-hint">— opsional</span></label>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, marginTop: -2 }}>
-            Pilih palette siap pakai atau tulis catatan warna sendiri.
-          </p>
-          <div className="palette-row">
-            {COLOR_PALETTES.map(p => (
-              <div
-                key={p.id}
-                className={'palette-card' + (form.palette === p.id ? ' selected' : '')}
-                onClick={() => upd('palette', form.palette === p.id ? '' : p.id)}
-                title={p.label}
-              >
-                <div className="palette-card-colors">
-                  {p.colors.map((c, i) => (
-                    <div key={i} className="palette-color" style={{ background: c }} />
-                  ))}
+        {/* Warna/Mood hanya untuk build */}
+        {form.services.includes('build') && (
+          <div className="field">
+            <label className="label">Warna / Mood Desain <span className="label-hint">— opsional</span></label>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10, marginTop: -2 }}>
+              Pilih palette siap pakai atau tulis catatan warna sendiri.
+            </p>
+            <div className="palette-row">
+              {COLOR_PALETTES.map(p => (
+                <div
+                  key={p.id}
+                  className={'palette-card' + (form.palette === p.id ? ' selected' : '')}
+                  onClick={() => upd('palette', form.palette === p.id ? '' : p.id)}
+                  title={p.label}
+                >
+                  <div className="palette-card-colors">
+                    {p.colors.map((c, i) => (
+                      <div key={i} className="palette-color" style={{ background: c }} />
+                    ))}
+                  </div>
+                  <div className="palette-label">{p.label}</div>
                 </div>
-                <div className="palette-label">{p.label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <input
+              className="input"
+              style={{ marginTop: 10 }}
+              placeholder="Atau tulis sendiri: 'biru navy + putih', '#FF6B35', dll"
+              value={form.customColor || ''}
+              onChange={e => upd('customColor', e.target.value)}
+            />
           </div>
-          <input
-            className="input"
-            style={{ marginTop: 10 }}
-            placeholder="Atau tulis sendiri: 'biru navy + putih', '#FF6B35', dll"
-            value={form.customColor || ''}
-            onChange={e => upd('customColor', e.target.value)}
-          />
-        </div>
+        )}
 
         <div className="field">
           <label className="label">Catatan Tambahan <span className="label-hint">— opsional</span></label>
@@ -494,5 +487,7 @@ function StepTimeline({ form, setForm, errors }) {
 Object.assign(window, {
   StepIdentity, StepService, StepTimeline,
   PRICING, DEFAULT_PRICING, SERVICES, CATEGORIES, OPS_CRUD, OPS_LAPORAN,
-  ATTR_TYPES, TECH_GROUPS, TECH_FLAT, COLOR_PALETTES, fmtRp,
+  ATTR_TYPES, DEFAULT_ATTR_TYPES,
+  TECH_GROUPS, DEFAULT_TECH_GROUPS, TECH_FLAT, COLOR_PALETTES, fmtRp,
+  UML_DIAGRAMS, DEFAULT_UML_DIAGRAMS,
 });
