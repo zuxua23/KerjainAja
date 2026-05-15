@@ -1030,6 +1030,14 @@ input:focus, textarea:focus, select:focus { outline: none; }
   border-radius: 999px;
   font-weight: 600;
 }
+.service-price .svc-via-chat {
+  font-size: 11px;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
 @media (max-width: 600px) {
   .service-card {
     grid-template-columns: auto 1fr auto;
