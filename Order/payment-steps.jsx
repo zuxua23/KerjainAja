@@ -2,20 +2,11 @@
 const { useState: usePS, useRef: useRefPS, useEffect: useEffectPS } = React;
 
 // ============================================
-// PRICING CALCULATOR
+// PRICING CALCULATOR (hanya menghitung build)
 // ============================================
 function calcTotal(form) {
   let total = 0;
   const lines = [];
-
-  // Services (one-time)
-  (form.services || []).forEach(sid => {
-    const svc = SERVICES.find(s => s.id === sid);
-    if (!svc || !svc.priceKey) return;
-    const p = PRICING[svc.priceKey];
-    total += p;
-    lines.push({ label: `Jasa: ${svc.label}`, val: p });
-  });
 
   // Build scope
   if ((form.services || []).includes('build')) {
@@ -38,15 +29,11 @@ function calcTotal(form) {
 
         // Operations (for non-dashboard)
         if (cat.ops) {
-          let opCost = 0;
-          let opCount = 0;
+          let opCost = 0, opCount = 0;
           items.forEach(it => {
             const ops = it.ops || {};
             cat.ops.forEach(op => {
-              if (ops[op.id]) {
-                opCost += PRICING[op.priceKey];
-                opCount += 1;
-              }
+              if (ops[op.id]) { opCost += PRICING[op.priceKey]; opCount += 1; }
             });
           });
           if (opCost > 0) {
@@ -60,25 +47,13 @@ function calcTotal(form) {
           let sumN = 0, chartN = 0, logN = 0;
           items.forEach(it => {
             const w = it.widgets || { sums: [], charts: [], logs: [] };
-            sumN += w.sums.length;
+            sumN   += w.sums.length;
             chartN += w.charts.length;
-            logN += w.logs.length;
+            logN   += w.logs.length;
           });
-          if (sumN > 0) {
-            const c = sumN * PRICING.dash_sum;
-            total += c;
-            lines.push({ label: `↳ ${sumN} sum widget`, val: c, sub: true });
-          }
-          if (chartN > 0) {
-            const c = chartN * PRICING.dash_chart;
-            total += c;
-            lines.push({ label: `↳ ${chartN} chart widget`, val: c, sub: true });
-          }
-          if (logN > 0) {
-            const c = logN * PRICING.dash_log;
-            total += c;
-            lines.push({ label: `↳ ${logN} log widget`, val: c, sub: true });
-          }
+          if (sumN   > 0) { const c = sumN   * PRICING.dash_sum;   total += c; lines.push({ label: `↳ ${sumN} sum widget`,   val: c, sub: true }); }
+          if (chartN > 0) { const c = chartN * PRICING.dash_chart; total += c; lines.push({ label: `↳ ${chartN} chart widget`, val: c, sub: true }); }
+          if (logN   > 0) { const c = logN   * PRICING.dash_log;   total += c; lines.push({ label: `↳ ${logN} log widget`,   val: c, sub: true }); }
         }
       }
     });
@@ -96,11 +71,13 @@ function calcTotal(form) {
 }
 
 // ============================================
-// STEP — RINGKASAN
+// STEP — RINGKASAN (hanya muncul untuk build)
 // ============================================
 function StepSummary({ form }) {
   const { total, lines, dp, sisa } = calcTotal(form);
   const paletteLabel = form.palette ? COLOR_PALETTES.find(p => p.id === form.palette)?.label : null;
+  const techGroups   = window.TECH_GROUPS || [];
+  const attrTypes    = window.ATTR_TYPES  || [];
 
   return (
     <div className="step-content" data-screen-label="06 Ringkasan">
@@ -113,8 +90,8 @@ function StepSummary({ form }) {
       <div className="summary-card">
         <div className="summary-section">
           <div className="summary-section-title">Pelanggan</div>
-          <SumRow label="Nama" val={form.name || '—'} />
-          <SumRow label="WhatsApp" val={'+62' + (form.wa || '—')} />
+          <SumRow label="Nama"       val={form.name || '—'} />
+          <SumRow label="WhatsApp"   val={'+62' + (form.wa || '—')} />
           {form.email && <SumRow label="Email" val={form.email} />}
         </div>
 
@@ -124,48 +101,7 @@ function StepSummary({ form }) {
             const svc = SERVICES.find(s => s.id === sid);
             if (!svc) return null;
             return (
-              <SumRow
-                key={sid}
-                label={svc.label}
-                val={svc.priceKey ? fmtRp(PRICING[svc.priceKey]) : 'Sesuai scope'}
-              />
-            );
-          })}
-          {form.services.includes('consult') && form.consult && (
-            <div className="sum-block">
-              {form.consult.fields && (
-                <div className="sum-paragraph">
-                  <div className="sum-paragraph-label">Kebutuhan</div>
-                  <pre>{form.consult.fields}</pre>
-                </div>
-              )}
-              {(form.consult.pdm || form.consult.activity || form.consult.usecase) && (
-                <SumRow
-                  label="Diagram"
-                  val={[
-                    form.consult.pdm && 'PDM',
-                    form.consult.activity && 'Activity',
-                    form.consult.usecase && 'Use Case',
-                  ].filter(Boolean).join(', ')}
-                />
-              )}
-              {form.consult.probis && (
-                <div className="sum-paragraph">
-                  <div className="sum-paragraph-label">Proses Bisnis</div>
-                  <pre>{form.consult.probis}</pre>
-                </div>
-              )}
-            </div>
-          )}
-          {['uml-db', 'landing', 'revision'].map(sid => {
-            const notes = form.extras?.[sid]?.notes;
-            if (!form.services.includes(sid) || !notes) return null;
-            const svc = SERVICES.find(s => s.id === sid);
-            return (
-              <div key={sid} className="sum-paragraph">
-                <div className="sum-paragraph-label">{svc.label} — Catatan</div>
-                <pre>{notes}</pre>
-              </div>
+              <SumRow key={sid} label={svc.label} val={'Sesuai scope'} />
             );
           })}
         </div>
@@ -173,6 +109,12 @@ function StepSummary({ form }) {
         {form.services.includes('build') && (
           <div className="summary-section">
             <div className="summary-section-title">Scope Build</div>
+            {form.buildProbis && (
+              <div className="sum-paragraph">
+                <div className="sum-paragraph-label">Latar Belakang</div>
+                <pre>{form.buildProbis}</pre>
+              </div>
+            )}
             {CATEGORIES.map(cat => {
               const count = form.counts[cat.key] || 0;
               if (!count) return null;
@@ -181,7 +123,7 @@ function StepSummary({ form }) {
                 <div key={cat.key} style={{ marginBottom: 14 }}>
                   <SumRow label={cat.label} val={`${count} item`} bold />
                   {items.map((it, i) => (
-                    <ItemSummary key={i} idx={i} cat={cat} item={it} />
+                    <ItemSummary key={i} idx={i} cat={cat} item={it} attrTypes={attrTypes} />
                   ))}
                 </div>
               );
@@ -192,9 +134,9 @@ function StepSummary({ form }) {
         {form.services.includes('build') && form.tech.length > 0 && (
           <div className="summary-section">
             <div className="summary-section-title">Tech Stack</div>
-            {TECH_GROUPS.map(g => {
+            {techGroups.map(g => {
               const selected = form.tech.filter(id => g.options.some(o => o.id === id));
-              const labels = selected.map(id => g.options.find(o => o.id === id)?.label).filter(Boolean);
+              const labels   = selected.map(id => g.options.find(o => o.id === id)?.label).filter(Boolean);
               return (
                 <SumRow
                   key={g.key}
@@ -210,7 +152,9 @@ function StepSummary({ form }) {
           <div className="summary-section-title">Timeline</div>
           <SumRow
             label="Deadline"
-            val={form.deadline ? new Date(form.deadline).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+            val={form.deadline
+              ? new Date(form.deadline).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+              : '—'}
           />
           {paletteLabel && <SumRow label="Palette" val={paletteLabel} />}
           {form.customColor && <SumRow label="Catatan warna" val={form.customColor} />}
@@ -250,14 +194,14 @@ function SumRow({ label, val, sub, bold }) {
   return (
     <div className="summary-row" style={sub ? { paddingLeft: 14, fontSize: 12, color: 'var(--text-muted)' } : {}}>
       <span className="label" style={{ ...(sub ? { fontWeight: 400 } : {}), ...(bold ? { color: 'var(--text)', fontWeight: 700 } : {}) }}>{label}</span>
-      <span className="val" style={sub ? { fontWeight: 500 } : {}}>{val}</span>
+      <span className="val"   style={sub ? { fontWeight: 500 } : {}}>{val}</span>
     </div>
   );
 }
 
-function ItemSummary({ idx, cat, item }) {
-  const typeLabel = (t) => ATTR_TYPES.find(x => x.id === t)?.label || 'Text';
-  const opsList = cat.ops ? cat.ops.filter(o => item.ops?.[o.id]).map(o => o.label) : [];
+function ItemSummary({ idx, cat, item, attrTypes }) {
+  const typeLabel = (t) => (attrTypes || []).find(x => x.id === t)?.label || 'Text';
+  const opsList   = cat.ops ? cat.ops.filter(o => item.ops?.[o.id]).map(o => o.label) : [];
 
   return (
     <div className="sum-item">
@@ -278,15 +222,9 @@ function ItemSummary({ idx, cat, item }) {
       )}
       {cat.key === 'dashboard' && item.widgets && (
         <>
-          {item.widgets.sums.length > 0 && (
-            <div className="sum-item-detail">· {item.widgets.sums.length} sum: {item.widgets.sums.map(s => s.name || '(tanpa nama)').join(', ')}</div>
-          )}
-          {item.widgets.charts.length > 0 && (
-            <div className="sum-item-detail">· {item.widgets.charts.length} chart: {item.widgets.charts.map(c => `${c.name || '(tanpa nama)'} [${c.type}]`).join(', ')}</div>
-          )}
-          {item.widgets.logs.length > 0 && (
-            <div className="sum-item-detail">· {item.widgets.logs.length} log: {item.widgets.logs.map(l => l.name || '(tanpa nama)').join(', ')}</div>
-          )}
+          {item.widgets.sums.length   > 0 && <div className="sum-item-detail">· {item.widgets.sums.length} sum: {item.widgets.sums.map(s => s.name || '(tanpa nama)').join(', ')}</div>}
+          {item.widgets.charts.length > 0 && <div className="sum-item-detail">· {item.widgets.charts.length} chart: {item.widgets.charts.map(c => `${c.name||'(tanpa nama)'} [${c.type}]`).join(', ')}</div>}
+          {item.widgets.logs.length   > 0 && <div className="sum-item-detail">· {item.widgets.logs.length} log: {item.widgets.logs.map(l => l.name || '(tanpa nama)').join(', ')}</div>}
         </>
       )}
       {item.notes && <div className="sum-item-detail italic">· catatan: "{item.notes}"</div>}
@@ -295,24 +233,24 @@ function ItemSummary({ idx, cat, item }) {
 }
 
 // ============================================
-// STEP — PEMBAYARAN
+// STEP — PEMBAYARAN (hanya untuk build)
 // ============================================
-const PAYMENT_METHODS = [
-  { id: 'bca', name: 'BCA Transfer', logo: 'BCA', detail: '8290-456-789 · a.n. DevOrder Studio' },
-  { id: 'mandiri', name: 'Mandiri Transfer', logo: 'MNDR', detail: '1410-0098-7654 · a.n. DevOrder Studio' },
-  { id: 'dana', name: 'DANA', logo: 'DANA', detail: '0812-3456-7890' },
-  { id: 'gopay', name: 'GoPay', logo: 'GO', detail: '0812-3456-7890' },
-  { id: 'qris', name: 'QRIS', logo: 'QR', detail: 'Scan dari semua e-wallet' },
-];
-
 function StepPayment({ form, setForm, errors }) {
   const upd = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const { dp, total } = calcTotal(form);
-  const [copied, setCopied] = usePS(null);
+  const [copied, setCopied]   = usePS(null);
   const [dragOver, setDragOver] = usePS(false);
   const fileRef = useRefPS(null);
 
-  const selectedMethod = PAYMENT_METHODS.find(m => m.id === form.paymentMethod);
+  // Load payment methods from admin localStorage
+  const paymentMethods = (() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('devorder_payment_methods') || 'null');
+      return stored || DEFAULT_PAYMENT_METHODS;
+    } catch { return DEFAULT_PAYMENT_METHODS; }
+  })();
+
+  const selectedMethod = paymentMethods.find(m => m.id === form.paymentMethod);
 
   const copyAccount = (text) => {
     navigator.clipboard?.writeText(text);
@@ -346,16 +284,16 @@ function StepPayment({ form, setForm, errors }) {
       <div className="card">
         <label className="label" style={{ marginBottom: 12 }}>Pilih Metode Pembayaran</label>
         <div className="method-grid">
-          {PAYMENT_METHODS.map(m => (
+          {paymentMethods.map(m => (
             <div
               key={m.id}
               className={'method-card' + (form.paymentMethod === m.id ? ' selected' : '')}
               onClick={() => upd('paymentMethod', m.id)}
             >
-              <div className="method-logo" style={getLogoStyle(m.id)}>{m.logo}</div>
+              <div className="method-logo" style={getLogoStyle(m.id, m.type)}>{m.name.substring(0, 4).toUpperCase()}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="method-name">{m.name}</div>
-                <div className="method-detail">{m.id === 'qris' ? 'Universal' : 'Tap untuk lihat detail'}</div>
+                <div className="method-detail">{m.type === 'qris' ? 'Universal' : 'Tap untuk lihat detail'}</div>
               </div>
               <div className="method-radio" />
             </div>
@@ -369,7 +307,7 @@ function StepPayment({ form, setForm, errors }) {
             <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
               Detail {selectedMethod.name}
             </div>
-            {selectedMethod.id === 'qris' ? (
+            {selectedMethod.type === 'qris' ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: 16 }}>
                 <div style={{ width: 180, height: 180, background: 'white', borderRadius: 12, padding: 12, border: '1.5px solid var(--border)' }}>
                   <FakeQR />
@@ -380,19 +318,19 @@ function StepPayment({ form, setForm, errors }) {
                 <div className="account-row">
                   <span className="account-label">No. Rekening</span>
                   <span className="account-val">
-                    {selectedMethod.detail.split(' · ')[0]}
+                    {selectedMethod.norek}
                     <button
-                      className={'copy-btn' + (copied === selectedMethod.detail.split(' · ')[0] ? ' copied' : '')}
-                      onClick={() => copyAccount(selectedMethod.detail.split(' · ')[0])}
+                      className={'copy-btn' + (copied === selectedMethod.norek ? ' copied' : '')}
+                      onClick={() => copyAccount(selectedMethod.norek)}
                     >
-                      {copied === selectedMethod.detail.split(' · ')[0] ? '✓ Tersalin' : 'Salin'}
+                      {copied === selectedMethod.norek ? '✓ Tersalin' : 'Salin'}
                     </button>
                   </span>
                 </div>
-                {selectedMethod.detail.includes(' · ') && (
+                {selectedMethod.atasNama && (
                   <div className="account-row">
                     <span className="account-label">Atas nama</span>
-                    <span className="account-val">{selectedMethod.detail.split(' · ')[1].replace('a.n. ', '')}</span>
+                    <span className="account-val">{selectedMethod.atasNama}</span>
                   </div>
                 )}
               </>
@@ -440,20 +378,30 @@ function StepPayment({ form, setForm, errors }) {
   );
 }
 
-function getLogoStyle(id) {
+const DEFAULT_PAYMENT_METHODS = [
+  { id: 'bca',  name: 'BCA',  norek: '1234567890', atasNama: 'Muhammad Nur Fauzan', type: 'bank'    },
+  { id: 'dana', name: 'Dana', norek: '08xxxxxxxxxx', atasNama: 'Muhammad Nur Fauzan', type: 'ewallet' },
+];
+
+function getLogoStyle(id, type) {
   const map = {
-    bca: { background: '#0060AF', color: 'white', border: 'none' },
-    mandiri: { background: '#003D79', color: '#FFD700', border: 'none', fontSize: 10 },
-    dana: { background: '#118EEA', color: 'white', border: 'none' },
-    gopay: { background: '#00AED6', color: 'white', border: 'none' },
-    qris: { background: '#ED1C24', color: 'white', border: 'none' },
+    bca:       { background: '#0060AF', color: 'white', border: 'none' },
+    blu:       { background: '#5CB8E4', color: 'white', border: 'none' },
+    mandiri:   { background: '#003D79', color: '#FFD700', border: 'none', fontSize: 10 },
+    bri:       { background: '#1566C0', color: 'white', border: 'none' },
+    bni:       { background: '#FF6600', color: 'white', border: 'none' },
+    dana:      { background: '#118EEA', color: 'white', border: 'none' },
+    ovo:       { background: '#4C3494', color: 'white', border: 'none' },
+    gopay:     { background: '#00AED6', color: 'white', border: 'none' },
+    shopeepay: { background: '#EE4D2D', color: 'white', border: 'none' },
+    qris:      { background: '#ED1C24', color: 'white', border: 'none' },
   };
-  return map[id] || {};
+  return map[id] || (type === 'bank' ? { background: '#444', color: 'white', border: 'none' } : { background: '#888', color: 'white', border: 'none' });
 }
 
 function FakeQR() {
   const cells = [];
-  const seed = 7;
+  const seed  = 7;
   for (let i = 0; i < 21; i++) {
     for (let j = 0; j < 21; j++) {
       const isFinder = (i < 7 && j < 7) || (i < 7 && j > 13) || (i > 13 && j < 7);
@@ -470,15 +418,14 @@ function FakeQR() {
 }
 
 // ============================================
-// SUCCESS SCREEN — with prominent WA link
+// SUCCESS SCREEN (untuk build — setelah bayar)
 // ============================================
-const ADMIN_WA = '6281234567890';
+const ADMIN_WA = (() => localStorage.getItem('devorder_admin_wa') || '6281234567890')();
 
 function SuccessScreen({ form, onReset }) {
   const { dp, total } = calcTotal(form);
-  const orderCode = 'DV-' + Date.now().toString(36).toUpperCase().slice(-7);
+  const orderCode     = 'DV-' + Date.now().toString(36).toUpperCase().slice(-7);
 
-  // Save order to localStorage for admin
   useEffectPS(() => {
     try {
       const orders = JSON.parse(localStorage.getItem('devorder_orders') || '[]');
@@ -494,7 +441,7 @@ function SuccessScreen({ form, onReset }) {
   }, []);
 
   const waMsg = encodeURIComponent(
-    `Halo Admin DevOrder! 👋\n\nSaya baru order dengan kode: *${orderCode}*\nNama: ${form.name}\nTotal: ${fmtRp(total)} (DP ${fmtRp(dp)})\n\nMohon konfirmasi ya, makasih!`
+    `Halo Admin! 👋\n\nSaya baru order dengan kode: *${orderCode}*\nNama: ${form.name}\nTotal: ${fmtRp(total)} (DP ${fmtRp(dp)})\n\nMohon konfirmasi ya, makasih!`
   );
   const waUrl = `https://wa.me/${ADMIN_WA}?text=${waMsg}`;
 
@@ -507,7 +454,6 @@ function SuccessScreen({ form, onReset }) {
       </p>
       <div className="success-code">#{orderCode}</div>
 
-      {/* PROMINENT WHATSAPP CARD */}
       <a className="wa-cta" href={waUrl} target="_blank" rel="noopener">
         <div className="wa-cta-icon">
           <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
@@ -524,14 +470,97 @@ function SuccessScreen({ form, onReset }) {
 
       <div className="next-steps-card">
         <div className="next-steps-title">Apa Selanjutnya?</div>
-        <NextStep n={1} title="Konfirmasi via WhatsApp" desc="Klik tombol di atas, kirim pesannya — admin auto-tahu order kamu." />
-        <NextStep n={2} title="Verifikasi pembayaran" desc="DP yang udah kamu transfer dicek admin dalam beberapa jam." />
-        <NextStep n={3} title="Diskusi spek & timeline" desc="Diskusi detail spek, kasih timeline pasti, progress update reguler." />
-        <NextStep n={4} title="Delivery & pelunasan" desc={`Aplikasi siap sesuai deadline. Pelunasan ${fmtRp(total - dp)} pas selesai.`} />
+        <NextStep n={1} title="Konfirmasi via WhatsApp"    desc="Klik tombol di atas, kirim pesannya — admin auto-tahu order kamu." />
+        <NextStep n={2} title="Verifikasi pembayaran"      desc="DP yang udah kamu transfer dicek admin dalam beberapa jam." />
+        <NextStep n={3} title="Diskusi spek & timeline"    desc="Diskusi detail spek, kasih timeline pasti, progress update reguler." />
+        <NextStep n={4} title="Delivery & pelunasan"       desc={`Aplikasi siap sesuai deadline. Pelunasan ${fmtRp(total - dp)} pas selesai.`} />
       </div>
 
       <div className="success-actions">
         <button className="btn btn-ghost" onClick={onReset}>+ Pesan project lain</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// WA REDIRECT SCREEN
+// Untuk jasa tanpa payment: UML, Landing, Revisi
+// ============================================
+function WaRedirectScreen({ form, onReset }) {
+  const adminWa = localStorage.getItem('devorder_admin_wa') || '6281234567890';
+
+  const serviceLabels = (form.services || []).map(sid => {
+    const map = { 'uml-db': 'Diagram UML & Database', landing: 'Landing Page', revision: 'Revisi / Bug Fix', build: 'Build dari 0' };
+    return map[sid] || sid;
+  });
+
+  const diagrams = form.extras?.['uml-db']?.diagrams || [];
+  const umlDiagrams = window.UML_DIAGRAMS || [];
+  const diagramLabels = diagrams.map(id => umlDiagrams.find(d => d.id === id)?.label || id);
+
+  const techGroups = window.TECH_GROUPS || [];
+  const feGroup    = techGroups.find(g => g.key === 'fe');
+  const selectedFe = (form.tech || []).filter(id => feGroup?.options.some(o => o.id === id));
+  const feLabels   = selectedFe.map(id => feGroup?.options.find(o => o.id === id)?.label).filter(Boolean);
+
+  let msgParts = [`Halo Admin! 👋\n\nSaya ingin tanya-tanya mengenai jasa: *${serviceLabels.join(', ')}*`];
+  msgParts.push(`\nNama: ${form.name}\nWA: +62${form.wa}`);
+  if (form.email) msgParts.push(`Email: ${form.email}`);
+
+  if (diagramLabels.length > 0) {
+    msgParts.push(`\nDiagram yang dibutuhkan:\n${diagramLabels.map(d => `• ${d}`).join('\n')}`);
+  }
+  if (form.extras?.['uml-db']?.notes) {
+    msgParts.push(`\nLatar belakang project:\n${form.extras['uml-db'].notes}`);
+  }
+  if (feLabels.length > 0) {
+    msgParts.push(`\nFramework frontend pilihan: ${feLabels.join(', ')}`);
+  }
+  if (form.extras?.['landing']?.notes) {
+    msgParts.push(`\nCatatan landing page:\n${form.extras['landing'].notes}`);
+  }
+  if (form.extras?.['revision']?.notes) {
+    msgParts.push(`\nCatatan revisi:\n${form.extras['revision'].notes}`);
+  }
+  if (form.deadline) {
+    msgParts.push(`\nDeadline: ${new Date(form.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+  }
+  msgParts.push(`\nBisa minta info harga dan detail lebih lanjut? Makasih 😊`);
+
+  const waUrl = `https://wa.me/${adminWa}?text=${encodeURIComponent(msgParts.join('\n'))}`;
+
+  return (
+    <div className="success-shell step-content" data-screen-label="WA Redirect">
+      <div className="success-badge" style={{ background: 'var(--primary, #5B3FE5)' }}>✓</div>
+      <h1 className="success-title">Form selesai diisi!</h1>
+      <p className="success-sub">
+        Makasih udah isi form-nya. Sekarang tinggal chat admin via WhatsApp — harga & detail kita diskusiin langsung.
+      </p>
+
+      <a className="wa-cta" href={waUrl} target="_blank" rel="noopener">
+        <div className="wa-cta-icon">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+        </div>
+        <div className="wa-cta-body">
+          <div className="wa-cta-eyebrow">Langkah Selanjutnya</div>
+          <div className="wa-cta-title">Chat Admin via WhatsApp</div>
+          <div className="wa-cta-sub">Diskusiin harga & detail project langsung</div>
+        </div>
+        <div className="wa-cta-arrow">→</div>
+      </a>
+
+      <div className="next-steps-card">
+        <div className="next-steps-title">Apa Selanjutnya?</div>
+        <NextStep n={1} title="Chat admin via WhatsApp"  desc="Klik tombol di atas, pesannya udah otomatis terisi — tinggal kirim." />
+        <NextStep n={2} title="Diskusi harga & detail"   desc="Admin akan jelasin harga, timeline, dan detail jasa yang kamu mau." />
+        <NextStep n={3} title="Sepakat & mulai dikerjain" desc="Kalau udah cocok, project langsung jalan!" />
+      </div>
+
+      <div className="success-actions">
+        <button className="btn btn-ghost" onClick={onReset}>+ Pesan jasa lain</button>
       </div>
     </div>
   );
@@ -550,5 +579,5 @@ function NextStep({ n, title, desc }) {
 }
 
 Object.assign(window, {
-  StepSummary, StepPayment, SuccessScreen, calcTotal, PAYMENT_METHODS, ADMIN_WA,
+  StepSummary, StepPayment, SuccessScreen, WaRedirectScreen, calcTotal, ADMIN_WA,
 });
