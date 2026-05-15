@@ -1,17 +1,17 @@
 /* global React, ReactDOM, TweaksPanel, useTweaks, TweakSection, TweakRadio, TweakColor, TweakToggle,
-   StepIdentity, StepService, StepScope, StepTechDesign, StepTimeline, StepSummary, StepPayment, SuccessScreen,
-   calcTotal, fmtRp, CATEGORIES, SERVICES */
+   StepIdentity, StepService, StepScope, StepTechDesign, StepTimeline, StepSummary, StepPayment,
+   SuccessScreen, WaRedirectScreen, calcTotal, fmtRp, CATEGORIES, SERVICES, TECH_GROUPS */
 const { useState, useEffect, useMemo } = React;
 
 const INITIAL_FORM = {
   name: '',
   wa: '',
   email: '',
-  services: [],        // ['build', 'consult', ...]
-  consult: { fields: '', pdm: false, activity: false, usecase: false, probis: '' },
-  extras: {},          // { 'uml-db': { notes }, 'landing': { notes }, 'revision': { notes } }
+  services: [],
+  extras: {},          // { 'uml-db': { diagrams:[], notes, probisFile }, 'landing': { notes }, 'revision': { notes } }
   counts: { master: 0, transaksi: 0, laporan: 0, dashboard: 0 },
   items: { master: [], transaksi: [], laporan: [], dashboard: [] },
+  buildProbis: '',     // latar belakang / probis untuk build dari 0
   tech: [],
   palette: '',
   customColor: '',
@@ -28,33 +28,56 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "showEstimate": true
 }/*EDITMODE-END*/;
 
-// Compute step list based on services
+// ============================================================
+// STEP FLOW
+// - build           → scope → tech → timeline → summary → payment
+// - uml-db (no build) → scope(diagram) → timeline → WA redirect
+// - landing (no build) → tech(FE only) → WA redirect
+// - revision (no build) → WA redirect langsung
+// ============================================================
 function getSteps(services) {
+  const hasBuild   = services.includes('build');
+  const hasUml     = services.includes('uml-db');
+  const hasLanding = services.includes('landing');
+
   const steps = [
     { id: 'identity', label: 'Data Diri' },
-    { id: 'service', label: 'Jasa' },
+    { id: 'service',  label: 'Jasa'      },
   ];
-  const needsScope = services.includes('build') || services.includes('consult')
-    || services.some(s => ['uml-db', 'landing', 'revision'].includes(s));
-  if (needsScope) steps.push({ id: 'scope', label: 'Scope' });
-  if (services.includes('build')) steps.push({ id: 'tech', label: 'Tech' });
-  steps.push(
-    { id: 'timeline', label: 'Catatan' },
-    { id: 'summary', label: 'Ringkasan' },
-    { id: 'payment', label: 'Bayar' },
-  );
+
+  if (hasBuild) {
+    steps.push({ id: 'scope',   label: 'Scope'      });
+    steps.push({ id: 'tech',    label: 'Tech'        });
+    steps.push({ id: 'timeline', label: 'Timeline'   });
+    steps.push({ id: 'summary', label: 'Ringkasan'   });
+    steps.push({ id: 'payment', label: 'Bayar'       });
+  } else {
+    if (hasUml) {
+      steps.push({ id: 'scope',    label: 'Diagram'  });
+      steps.push({ id: 'timeline', label: 'Timeline' });
+    }
+    if (hasLanding) {
+      steps.push({ id: 'tech', label: 'Tech Stack' });
+    }
+    // revision: tidak ada step tambahan, langsung WA
+  }
+
   return steps;
 }
 
 function App() {
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState(INITIAL_FORM);
-  const [errors, setErrors] = useState({});
-  const [done, setDone] = useState(false);
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [step, setStep]                 = useState(0);
+  const [form, setForm]                 = useState(INITIAL_FORM);
+  const [errors, setErrors]             = useState({});
+  const [done, setDone]                 = useState(false);
+  const [waRedirect, setWaRedirect]     = useState(false);
+  const [showIntroModal, setShowIntroModal] = useState(true);
+  const [t, setTweak]                   = useTweaks(TWEAK_DEFAULTS);
 
-  const STEPS = useMemo(() => getSteps(form.services), [form.services]);
+  const STEPS       = useMemo(() => getSteps(form.services), [form.services]);
   const currentStep = STEPS[step];
+  const hasBuild    = form.services.includes('build');
+  const isNonBuild  = form.services.length > 0 && !hasBuild;
 
   // Apply theme + primary color
   useEffect(() => {
@@ -77,7 +100,7 @@ function App() {
   useEffect(() => {
     const fontMap = {
       jakarta: "'Plus Jakarta Sans', sans-serif",
-      inter: "'Inter', sans-serif",
+      inter:   "'Inter', sans-serif",
       manrope: "'Manrope', sans-serif",
     };
     document.documentElement.style.setProperty('--font-sans', fontMap[t.fontPair] || fontMap.jakarta);
@@ -85,20 +108,29 @@ function App() {
 
   // Validation
   const validateStep = (s) => {
-    const e = {};
+    const e      = {};
     const stepId = STEPS[s]?.id;
+
     if (stepId === 'identity') {
-      if (!form.name.trim()) e.name = true;
-      if (!form.wa || form.wa.length < 9) e.wa = true;
+      if (!form.name.trim())              e.name = true;
+      if (!form.wa || form.wa.length < 9) e.wa   = true;
     }
+
     if (stepId === 'service') {
       if (form.services.length === 0) e.services = true;
     }
+
     if (stepId === 'scope') {
+      // UML: minimal 1 diagram wajib dipilih
+      if (form.services.includes('uml-db')) {
+        const diagrams = form.extras?.['uml-db']?.diagrams || [];
+        if (diagrams.length === 0) e.diagrams = true;
+      }
+      // Build: minimal 1 kategori
       if (form.services.includes('build')) {
         const total = Object.values(form.counts).reduce((a, b) => a + b, 0);
         if (total === 0) e.scope = true;
-        // Dashboard widget required if dashboard count > 0
+        // Dashboard widget wajib kalau dashboard dipilih
         const dashItems = form.items.dashboard || [];
         if ((form.counts.dashboard || 0) > 0) {
           const anyWidget = dashItems.some(it => {
@@ -109,16 +141,20 @@ function App() {
         }
       }
     }
+
     if (stepId === 'tech') {
       if (form.tech.length === 0) e.tech = true;
     }
+
     if (stepId === 'timeline') {
       if (!form.deadline) e.deadline = true;
     }
+
     if (stepId === 'payment') {
       if (!form.paymentMethod) e.paymentMethod = true;
-      if (!form.proof) e.proof = true;
+      if (!form.proof)         e.proof         = true;
     }
+
     return e;
   };
 
@@ -126,7 +162,6 @@ function App() {
     const e = validateStep(step);
     setErrors(e);
     if (Object.keys(e).length > 0) {
-      // scroll to first error after render
       setTimeout(() => {
         const errEl = document.querySelector('.error-msg, .input.error');
         errEl?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
@@ -134,7 +169,11 @@ function App() {
       return;
     }
     if (step === STEPS.length - 1) {
-      setDone(true);
+      if (isNonBuild) {
+        setWaRedirect(true);
+      } else {
+        setDone(true);
+      }
       return;
     }
     setStep(s => s + 1);
@@ -151,7 +190,9 @@ function App() {
     setForm(INITIAL_FORM);
     setStep(0);
     setDone(false);
+    setWaRedirect(false);
     setErrors({});
+    setShowIntroModal(true);
   };
 
   const { total } = calcTotal(form);
@@ -167,39 +208,65 @@ function App() {
     );
   }
 
+  if (waRedirect) {
+    return (
+      <>
+        <div className="main">
+          <WaRedirectScreen form={form} onReset={reset} />
+        </div>
+        <TweaksUI t={t} setTweak={setTweak} />
+      </>
+    );
+  }
+
+  const isLastStep   = step === STEPS.length - 1;
+  const lastBtnLabel = isNonBuild && isLastStep
+    ? 'Chat via WhatsApp →'
+    : currentStep?.id === 'summary' ? 'Lanjut ke Pembayaran'
+    : currentStep?.id === 'payment' ? 'Kirim Pesanan ✓'
+    : 'Lanjut →';
+
   return (
     <div className="app">
+      {showIntroModal && <IntroModal onClose={() => setShowIntroModal(false)} />}
+
       <Stepper steps={STEPS} step={step} />
 
       <div className="main">
         {currentStep?.id === 'identity' && <StepIdentity form={form} setForm={setForm} errors={errors} />}
-        {currentStep?.id === 'service' && <StepService form={form} setForm={setForm} errors={errors} />}
-        {currentStep?.id === 'scope' && <StepScope form={form} setForm={setForm} errors={errors} />}
-        {currentStep?.id === 'tech' && <StepTechDesign form={form} setForm={setForm} errors={errors} />}
+        {currentStep?.id === 'service'  && <StepService  form={form} setForm={setForm} errors={errors} />}
+        {currentStep?.id === 'scope'    && <StepScope    form={form} setForm={setForm} errors={errors} />}
+        {currentStep?.id === 'tech'     && (
+          <StepTechDesign
+            form={form}
+            setForm={setForm}
+            errors={errors}
+            landingOnly={form.services.includes('landing') && !form.services.includes('build')}
+          />
+        )}
         {currentStep?.id === 'timeline' && <StepTimeline form={form} setForm={setForm} errors={errors} />}
-        {currentStep?.id === 'summary' && <StepSummary form={form} />}
-        {currentStep?.id === 'payment' && <StepPayment form={form} setForm={setForm} errors={errors} />}
+        {currentStep?.id === 'summary'  && <StepSummary  form={form} />}
+        {currentStep?.id === 'payment'  && <StepPayment  form={form} setForm={setForm} errors={errors} />}
 
         <div className="nav-bar">
-          <button className="btn btn-ghost" onClick={prev} disabled={step === 0} style={{ visibility: step === 0 ? 'hidden' : 'visible' }}>
+          <button
+            className="btn btn-ghost"
+            onClick={prev}
+            disabled={step === 0}
+            style={{ visibility: step === 0 ? 'hidden' : 'visible' }}
+          >
             ← Kembali
           </button>
           <div className="right">
-            {step < STEPS.length - 1 && (
-              <button className="btn btn-primary btn-lg" onClick={next}>
-                {currentStep?.id === 'summary' ? 'Lanjut ke Pembayaran' : 'Lanjut'} →
-              </button>
-            )}
-            {step === STEPS.length - 1 && (
-              <button className="btn btn-primary btn-lg" onClick={next}>
-                Kirim Pesanan ✓
-              </button>
-            )}
+            <button className="btn btn-primary btn-lg" onClick={next}>
+              {lastBtnLabel}
+            </button>
           </div>
         </div>
       </div>
 
-      {t.showEstimate && total > 0 && currentStep?.id !== 'summary' && currentStep?.id !== 'payment' && (
+      {/* Estimate pill hanya untuk build */}
+      {t.showEstimate && total > 0 && hasBuild && currentStep?.id !== 'summary' && currentStep?.id !== 'payment' && (
         <div className="estimate-pill">
           <span className="ep-dot" />
           <span style={{ color: 'var(--text-muted)' }}>Estimasi total:</span>
@@ -207,7 +274,7 @@ function App() {
         </div>
       )}
 
-      {total > 0 && currentStep?.id !== 'summary' && currentStep?.id !== 'payment' && (
+      {total > 0 && hasBuild && currentStep?.id !== 'summary' && currentStep?.id !== 'payment' && (
         <div className="mobile-total">
           <div>
             <div className="label">Estimasi Total</div>
@@ -224,6 +291,44 @@ function App() {
   );
 }
 
+// ============================================
+// INTRO MODAL
+// ============================================
+function IntroModal({ onClose }) {
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 9999, padding: 20,
+      }}
+    >
+      <div
+        style={{
+          background: 'var(--bg-card, #fff)', borderRadius: 16, padding: '32px 28px',
+          maxWidth: 420, width: '100%', textAlign: 'center',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ fontSize: 52, marginBottom: 14, lineHeight: 1 }}>👋</div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: 'var(--text, #111)', lineHeight: 1.3 }}>
+          Hai, sebelum mulai!
+        </h2>
+        <p style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--text-muted, #555)', marginBottom: 28 }}>
+          kamu isi data diri dan form dulu yak nanti kami chat pribadi untuk lebih lanjut. terimakasih 😊
+        </p>
+        <button className="btn btn-primary btn-lg" onClick={onClose} style={{ width: '100%' }}>
+          Oke, siap! →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// STEPPER
+// ============================================
 function Stepper({ steps, step }) {
   return (
     <div className="stepper-wrap">
@@ -242,6 +347,9 @@ function Stepper({ steps, step }) {
   );
 }
 
+// ============================================
+// TWEAKS UI
+// ============================================
 function TweaksUI({ t, setTweak }) {
   return (
     <TweaksPanel>
@@ -251,9 +359,9 @@ function TweaksUI({ t, setTweak }) {
         value={t.theme}
         onChange={v => setTweak('theme', v)}
         options={[
-          { value: 'light', label: 'Light' },
-          { value: 'cream', label: 'Cream' },
-          { value: 'dark', label: 'Dark' },
+          { value: 'light', label: 'Light'  },
+          { value: 'cream', label: 'Cream'  },
+          { value: 'dark',  label: 'Dark'   },
         ]}
       />
 
@@ -273,7 +381,7 @@ function TweaksUI({ t, setTweak }) {
         onChange={v => setTweak('fontPair', v)}
         options={[
           { value: 'jakarta', label: 'Jakarta' },
-          { value: 'inter', label: 'Inter' },
+          { value: 'inter',   label: 'Inter'   },
           { value: 'manrope', label: 'Manrope' },
         ]}
       />
@@ -288,7 +396,9 @@ function TweaksUI({ t, setTweak }) {
   );
 }
 
-// ============== color utils ==============
+// ============================================
+// COLOR UTILS
+// ============================================
 function hexToRgba(hex, a) {
   const m = hex.replace('#', '');
   const r = parseInt(m.slice(0, 2), 16);
@@ -309,7 +419,7 @@ function adjust(hex, amt) {
 
 (function loadExtraFonts() {
   const link = document.createElement('link');
-  link.rel = 'stylesheet';
+  link.rel  = 'stylesheet';
   link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap';
   document.head.appendChild(link);
 })();
